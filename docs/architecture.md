@@ -89,7 +89,7 @@ lobby ──start──► question ──time up / host──► reveal ──n
                                     finished
 ```
 
-Host RPCs: `start_session`, `next_question`, `reveal_question`, `pause_session`, `resume_session`, `finish_session`.
+Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_session`. There's no separate pause/finish call: `next_question` after a round's last question moves to `paused` (with `round_idx` pointing at the round to resume), and after the last round to `finished`. Each host move locks the session row (`select … for update`), so two clicks can't skip a question; `submit_answer` takes a shared lock so answers don't block each other. `submit_answer` returns only `{accepted: true}`: correctness is revealed to phones only in `reveal_payload`. The question order comes from `quiz_sequence(quiz_id)` (rounds by position, then questions; empty rounds skipped).
 
 **Starting a session (KQ-7):** `create_session(quiz_id)` (security invoker, so RLS applies) inserts a session with a random 6-digit PIN, retrying on collision with an active session. `players` and `sessions` are in the `supabase_realtime` publication; the lobby subscribes to `players` INSERTs for its session.
 
