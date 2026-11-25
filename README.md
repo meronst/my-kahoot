@@ -40,3 +40,4 @@ docs/         requirements, architecture, decisions (ADRs)
 ## Deploy
 
 Vercel deploys a preview for every pull request and production on merge to `main` (set up in KQ-3).
+`vercel.json` pins the framework to Next.js, so the build doesn't depend on Vercel's auto-detection (bug KQ-25).
