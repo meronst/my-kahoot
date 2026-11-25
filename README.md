@@ -29,6 +29,18 @@ make db-reset    # wipe and rebuild the local DB
 Copy `.env.example` to `.env.local` and fill in the cloud project's URL and publishable key to run the app against the cloud.
 Merges to `release/*` or `main` apply new migrations to the cloud project automatically (`.github/workflows/db-deploy.yml`, see [ADR 0002](docs/decisions/0002-database-environments.md)).
 
+## Host account (one-time setup)
+
+1. Supabase dashboard → **Authentication → Users → Add user → Create new user**: your email and a strong password, with "Auto Confirm User" on.
+2. **SQL Editor**, run once (with your email):
+   ```sql
+   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"host"}'
+   where email = 'you@example.com';
+   ```
+3. Log in at `/host/login`. Accounts without the role are refused ([ADR 0003](docs/decisions/0003-host-role.md)).
+
+Locally the seed creates a demo host: `demo-host@my-kahoot.local` / `demo-password-123`.
+
 ## Checks
 
 Every pull request into `release/*` or `main` runs the pre-merge gate (`.github/workflows/pre-merge.yml`):

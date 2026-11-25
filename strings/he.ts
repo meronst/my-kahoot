@@ -18,6 +18,28 @@ export const he = {
     title: "החידון שלי",
     subtitle: "בקרוב: הצטרפות לחידון עם קוד או סריקת QR",
   },
+  login: {
+    title: "כניסת מנחה",
+    email: "אימייל",
+    password: "סיסמה",
+    submit: "כניסה",
+    submitting: "נכנס…",
+    errors: {
+      invalidCredentials: "האימייל או הסיסמה שגויים",
+      emailNotConfirmed: "יש לאשר את כתובת האימייל לפני הכניסה",
+      tooManyAttempts: "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות",
+      notHost: "לחשבון הזה אין הרשאת מנחה",
+      missingFields: "יש למלא אימייל וסיסמה",
+      generic: "הכניסה נכשלה. נסו שוב",
+    },
+  },
+  host: {
+    title: "אזור המנחה",
+    loading: "טוען…",
+    signedInAs: "מחובר בתור",
+    signOut: "יציאה",
+    comingSoon: "כאן תופיע רשימת החידונים",
+  },
 } as const;
 
 /** Short alias used in components: `import { t } from "@/strings/he"`. */
