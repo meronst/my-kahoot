@@ -89,7 +89,13 @@ lobby ──start──► question ──time up / host──► reveal ──n
 
 Host RPCs: `start_session`, `next_question`, `reveal_question`, `pause_session`, `resume_session`, `finish_session`.
 
-**Starting a session (KQ-7):** `create_session(quiz_id)` (security invoker, so RLS applies) inserts a session with a random 6-digit PIN, retrying on collision with an active session. `players` and `sessions` are in the `supabase_realtime` publication; the lobby subscribes to `players` INSERTs for its session and re-loads the list once subscribed, so no join is missed.
+**Starting a session (KQ-7):** `create_session(quiz_id)` (security invoker, so RLS applies) inserts a session with a random 6-digit PIN, retrying on collision with an active session. `players` and `sessions` are in the `supabase_realtime` publication; the lobby subscribes to `players` INSERTs for its session.
+
+**Realtime reliability lessons (KQ-28):**
+- Give Realtime the user's token before subscribing (`auth.getSession()` → `realtime.setAuth()`), otherwise the socket joins as `anon` and RLS delivers nothing.
+- `SUBSCRIBED` only means the channel is joined. Create channels with `replication_ready: true` and treat them as live on the `system` "ok" event; re-load the current state at that moment.
+- Even then, the first event after the Realtime server starts was observed to be lost (not late) in CI. Screens that must never miss data (the projector lobby) also poll every 1.5s as a safety net. Phones must not poll at that rate (150× the load): the game screens (KQ-9/10) re-sync from `sessions` on `READY` and on reconnect instead.
+- `data-realtime` on live components exposes the state (READY, CHANNEL_ERROR, TIMED_OUT, REPLICATION_ERROR) for tests and debugging.
 
 **Realtime traffic per question (150 players):** question shown ~150 messages; answers ~150 (to the host only, spread over the timer); reveal ~150.
 `reveal_payload` carries the distribution, correct option, explanation, top-5 leaderboard and every player's score, so phones need no second request.
