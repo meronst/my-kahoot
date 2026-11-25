@@ -20,8 +20,11 @@ concurrency:
   group: pre-merge-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+# Least privilege: jobs can read code and PR metadata, nothing else.
+# pull-requests: read is needed by the secret scan to list the PR's commits (bug KQ-24).
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   conventions:
