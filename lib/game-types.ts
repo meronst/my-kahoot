@@ -68,3 +68,15 @@ export function progressKey(s: Pick<SessionRow, "status" | "round_idx" | "questi
       return Number.MAX_SAFE_INTEGER;
   }
 }
+
+/** Written once when the game ends (supabase/migrations/*_final_results.sql). */
+export type FinalPayload = {
+  show_scores: boolean;
+  players: number;
+  podium: { player_id: string; nickname: string; score: number; rank: number }[];
+  ranks: Record<string, { rank: number; score: number }>;
+};
+
+export function finalPayload(session: { final_payload?: unknown }): FinalPayload | null {
+  return (session.final_payload as FinalPayload | null | undefined) ?? null;
+}

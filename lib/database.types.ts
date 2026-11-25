@@ -131,14 +131,14 @@ isOneToOne: false
                   ]
                 },"sessions": {
                   Row: {
-                    "created_at": string,"expires_at": string,"id": string,"pin": string,"question_idx": number,"question_payload": Json | null,"question_started_at": string | null,"quiz_id": string,"reveal_payload": Json | null,"round_idx": number,"status": Database["public"]['Enums']["session_status"]
+                    "created_at": string,"expires_at": string,"final_payload": Json | null,"id": string,"pin": string,"question_idx": number,"question_payload": Json | null,"question_started_at": string | null,"quiz_id": string,"reveal_payload": Json | null,"round_idx": number,"status": Database["public"]['Enums']["session_status"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"expires_at"?: string,"id"?: string,"pin": string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id": string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
+                    "created_at"?: string,"expires_at"?: string,"final_payload"?: Json | null,"id"?: string,"pin": string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id": string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
                   }
                   Update: {
-                    "created_at"?: string,"expires_at"?: string,"id"?: string,"pin"?: string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id"?: string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
+                    "created_at"?: string,"expires_at"?: string,"final_payload"?: Json | null,"id"?: string,"pin"?: string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id"?: string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
                   }
                   Relationships: [
                     {
@@ -155,10 +155,32 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "_lock_hosted_session":
+            "_finish":
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"_lock_hosted_session":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -179,6 +201,7 @@ isOneToOne: false
 { Args: { "p_idx": number,"p_round": number,"p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -199,6 +222,28 @@ isOneToOne: false
 { Args: { "p_quiz_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"finish_session":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -245,6 +290,7 @@ isOneToOne: false
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -273,6 +319,7 @@ isOneToOne: false
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -293,6 +340,7 @@ isOneToOne: false
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,
@@ -324,6 +372,7 @@ isOneToOne: false
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
+"final_payload": Json | null,
 "id": string,
 "pin": string,
 "question_idx": number,

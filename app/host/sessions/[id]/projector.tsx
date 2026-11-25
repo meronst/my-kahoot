@@ -12,16 +12,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { questionPayload, revealPayload, type SessionRow } from "@/lib/game-types";
+import { finalPayload, questionPayload, revealPayload, type SessionRow } from "@/lib/game-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useLiveSession } from "@/lib/use-live-session";
 import { t } from "@/strings/he";
 import { LobbyPlayers, useLivePlayers, type Player } from "./lobby-players";
+import { FinalScreen } from "./final-screen";
 import { PauseScreen } from "./pause-screen";
 import { QuestionScreen } from "./question-screen";
 import { RevealScreen } from "./reveal-screen";
 
-type Move = "start_session" | "reveal_question" | "next_question" | "resume_session";
+type Move = "start_session" | "reveal_question" | "next_question" | "resume_session" | "finish_session";
 
 type Props = {
   initialSession: SessionRow;
@@ -121,9 +122,7 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
           joinInfo={<JoinInfo pin={session.pin} joinUrl={joinUrl} qrSvg={qrSvg} />}
         />
       )}
-      {session.status === "finished" && (
-        <p data-testid="finished" className="text-5xl font-bold">{t.projector.finished}</p>
-      )}
+      {session.status === "finished" && <FinalScreen final={finalPayload(session)} />}
 
       <div className="flex flex-col items-center gap-2">
         {primary && (
@@ -139,8 +138,36 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
         )}
         {error && <p role="alert" className="text-red-600 dark:text-red-400">{error}</p>}
         {primary && <p className="text-sm opacity-60">{t.projector.keyboardHint}</p>}
+        {(session.status === "reveal" || session.status === "paused") && (
+          <EndEarly onConfirm={() => void run("finish_session")} disabled={busy} />
+        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Ends the game before the last question (e.g. the lecture ran out of time). Two clicks: the first
+ * arms it and changes the label, the second ends the game. An inline confirm instead of a browser
+ * dialog keeps it usable on a projector with a clicker. It disarms itself after 5 seconds.
+ */
+function EndEarly({ onConfirm, disabled }: { onConfirm: () => void; disabled: boolean }) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const id = setTimeout(() => setArmed(false), 5000);
+    return () => clearTimeout(id);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      data-testid="end-early"
+      disabled={disabled}
+      onClick={() => (armed ? onConfirm() : setArmed(true))}
+      className={`mt-2 rounded-lg border px-4 py-2 text-sm ${armed ? "border-red-600 text-red-600" : "border-current/30 opacity-70"}`}
+    >
+      {armed ? t.projector.endEarlyConfirm : t.projector.endEarly}
+    </button>
   );
 }
 
