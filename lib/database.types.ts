@@ -278,6 +278,9 @@ isOneToOne: false
 "health":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"import_rounds":
+{ Args: { "p_quiz_id": string,"p_rounds": Json }; Returns: number
+                           },
 "is_host":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },

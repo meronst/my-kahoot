@@ -12,6 +12,7 @@ import { refresh } from "next/cache";
 import { getHost } from "@/lib/auth";
 import { IMAGE_BUCKET } from "@/lib/question-image";
 import { parseQuestionForm, TF_OPTIONS } from "@/lib/question-form";
+import { parseImportRows, type Cell, type ImportError } from "@/lib/quiz-import";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
 
@@ -138,4 +139,21 @@ export async function setQuestionImage(questionId: string, path: string | null):
   }
   refresh();
   return {};
+}
+
+export type ImportState = { imported?: number; errors?: ImportError[]; error?: string };
+
+/**
+ * Saves an imported spreadsheet (KQ-18). `rows` are the raw cells the browser read from the file;
+ * we parse and check them again here, then save everything in one transaction (import_rounds).
+ */
+export async function importRows(quizId: string, rows: Cell[][]): Promise<ImportState> {
+  const parsed = parseImportRows(rows);
+  if (!parsed.ok) return { errors: parsed.errors };
+  const supabase = await db();
+  const payload = parsed.rounds.map((r) => ({ title: r.title, questions: r.questions }));
+  const { data, error } = await supabase.rpc("import_rounds", { p_quiz_id: quizId, p_rounds: payload });
+  if (error) return { error: t.import.errors.save };
+  refresh();
+  return { imported: data };
 }
