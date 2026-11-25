@@ -83,6 +83,26 @@ export const he = {
     notFound: "החידון לא נמצא",
     qrAlt: "קוד QR להצטרפות לחידון",
   },
+  projector: {
+    start: "התחלת החידון",
+    reveal: "הצגת התשובה",
+    next: "לשאלה הבאה",
+    resume: "המשך לסבב הבא",
+    roundOf: "סבב",
+    questionOf: "שאלה",
+    of: "מתוך",
+    answered: "ענו",
+    secondsLeft: "שניות",
+    noTimer: "ללא הגבלת זמן",
+    correctAnswer: "התשובה הנכונה",
+    leaderboard: "המובילים",
+    points: "נקודות",
+    paused: "הפסקה: נתראה בסבב הבא!",
+    finished: "החידון הסתיים",
+    actionFailed: "הפעולה נכשלה. נסו שוב",
+    keyboardHint: "רווח = הפעולה הבאה",
+    needPlayers: "ממתינים למשתתף ראשון",
+  },
 } as const;
 
 /** Short alias used in components: `import { t } from "@/strings/he"`. */
