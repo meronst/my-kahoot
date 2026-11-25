@@ -113,6 +113,8 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
 
 **Reconnect:** anonymous auth keeps the player's session in the browser; on reload the player row is found by `auth.uid()`.
 
+**Projector (KQ-10):** `/host/sessions/[id]` renders `<Projector>`, which follows the session with `useLiveSession` (Realtime + 1.5s poll; `progressKey()` makes it accept only forward moves, so a late reply can't undo a newer state). The main button (and Space) calls the next legal engine function; the projector auto-reveals when the countdown (server clock via `server_time()`) hits 0 or every player answered. Option colors+shapes (`lib/answer-style.ts`) are shared with phones.
+
 ## 5. Authoring & import
 - Editor: forms per question, drag to reorder, image upload (resized in the browser to ≤ 1600px, stored in Supabase Storage).
 - Import: Excel/CSV template parsed in the browser (SheetJS), per-row Hebrew validation, preview, save.
