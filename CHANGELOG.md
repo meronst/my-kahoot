@@ -5,12 +5,14 @@ Format: one section per version; entries reference Jira keys.
 ## v1.0 — Live quiz for lectures (in progress)
 
 ### Fixed
+- Host forms no longer reset what was typed after a failed save (KQ-30)
 - Deployed app: "permission denied for table quizzes": explicit API grants for all game tables; local Supabase now matches the cloud's no-auto-grant behavior (KQ-29)
 - Vercel builds: framework pinned to Next.js in `vercel.json` (KQ-25)
 - Secret-scan CI job: added the `pull-requests: read` permission (KQ-24)
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Quiz management: new quiz, settings page (title, scoring mode, collect phone), duplicate (with rounds and questions), delete with two-click confirmation (KQ-15)
 - Final results: `final_payload` with competition ranks (ties share a rank) and top-3 podium; projector podium; phone shows 'place X of N'; host can end early between questions (two-click confirm); results mode shows no podium (KQ-14)
 - Pause between rounds: projector shows standings, the next round and the PIN/QR for late joiners; phones show the break; resume continues with the next round (KQ-13)
 - Phone game screens: full question, large colored answer buttons, countdown, one tap = one answer (locked instantly, remembered across reload), 'answer received', result with correct/wrong, points and total score (KQ-11)

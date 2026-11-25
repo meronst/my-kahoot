@@ -122,6 +122,8 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
 **End of game (KQ-14):** `_finish()` sets `finished` and writes `sessions.final_payload` once: `ranks` per player (SQL `rank()`, ties share a rank), top-3 `podium`, `show_scores`. Reached by `next_question` after the last round or by `finish_session` (host ends early; allowed in lobby/reveal/paused, not mid-question so given answers count).
 
 ## 5. Authoring & import
+
+- Quiz list on `/host`: start, edit (`/host/quizzes/[id]`), duplicate (`duplicate_quiz()`, security invoker: RLS applies, copy owned by the caller), delete (two-click `ConfirmButton`; cascades to rounds, questions and past sessions). Settings form validated by `lib/quiz-settings.ts` before the update (KQ-15).
 - Editor: forms per question, drag to reorder, image upload (resized in the browser to ≤ 1600px, stored in Supabase Storage).
 - Import: Excel/CSV template parsed in the browser (SheetJS), per-row Hebrew validation, preview, save.
   Columns: `round | question | type (mc/tf) | option1–4 | correct (1–4 / true/false) | time_sec | explanation | image_url`
