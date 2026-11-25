@@ -9,25 +9,36 @@
  *     (and a reload) knows who this player is: that's what makes reconnect work.
  *
  * Steps: anonymous sign-in (only if not signed in yet) → join_session() → go to the player screen.
+ *
+ * KQ-19: when the quiz collects phone numbers, an OPTIONAL phone field appears with its consent line.
+ * We check the format here for a quick Hebrew message (lib/phone.ts); the database checks again.
+ * The number is never logged: it goes from this form straight into the join_session call.
  */
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { joinErrorMessage } from "@/lib/join-errors";
+import { normalizePhone } from "@/lib/phone";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { t } from "@/strings/he";
 
-export function JoinForm({ pin, sessionId }: { pin: string; sessionId: string }) {
+export function JoinForm({ pin, sessionId, collectPhone }: { pin: string; sessionId: string; collectPhone: boolean }) {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPending(true);
     setError(undefined);
+    const wantsPhone = collectPhone && phone.trim() !== "";
+    if (wantsPhone && !normalizePhone(phone)) {
+      setError(t.join.errors.phoneInvalid);
+      return;
+    }
+    setPending(true);
     const supabase = getSupabaseBrowserClient();
 
     // Reuse the phone's existing login if it has one (e.g. joined another quiz earlier today).
@@ -41,7 +52,11 @@ export function JoinForm({ pin, sessionId }: { pin: string; sessionId: string })
       }
     }
 
-    const { error: joinError } = await supabase.rpc("join_session", { p_pin: pin, p_nickname: nickname });
+    const { error: joinError } = await supabase.rpc("join_session", {
+      p_pin: pin,
+      p_nickname: nickname,
+      p_phone: wantsPhone ? phone : undefined,
+    });
     if (joinError) {
       setError(joinErrorMessage(joinError));
       setPending(false);
@@ -66,6 +81,23 @@ export function JoinForm({ pin, sessionId }: { pin: string; sessionId: string })
         />
         <span className="text-sm opacity-70">{t.join.nicknameHint}</span>
       </label>
+      {collectPhone && (
+        <label className="flex flex-col gap-1 text-lg">
+          <span>{t.join.phoneLabel}</span>
+          <input
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            maxLength={20}
+            dir="ltr" // digits read left-to-right
+            className="rounded-lg border-2 border-current/30 bg-transparent px-4 py-3 text-center text-2xl"
+          />
+          <span data-testid="phone-consent" className="text-sm opacity-70">{t.join.phoneConsent}</span>
+        </label>
+      )}
       {error && <p role="alert" data-testid="join-error" className="text-red-600 dark:text-red-400">{error}</p>}
       <button
         type="submit"

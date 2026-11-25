@@ -12,6 +12,7 @@ Format: one section per version; entries reference Jira keys.
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Optional phone number on the join screen (only when the quiz asks; consent line; Israeli mobile format), CSV download for the host on the final screen, automatic deletion after 30 days by a daily pg_cron job, CI check that numbers never appear in logs (KQ-19)
 - Import questions from Excel/CSV: downloadable Hebrew templates, every broken row listed with its row number and reason, preview, all-or-nothing save with `import_rounds()` (KQ-18)
 - Images in questions: upload from the editor (resized in the browser to ≤ 1600px, a 6 MB photo ends up ~300 KB), shown on the projector and the phones; `question-images` storage bucket with host-only uploads (KQ-17)
 - Rounds and questions editor on the quiz page: add/rename/delete/reorder rounds; add multiple-choice and true/false questions, edit text, options, correct answer, timer and explanation with Hebrew validation; reorder with ▲/▼; `move_round()` / `move_question()` (KQ-16)
