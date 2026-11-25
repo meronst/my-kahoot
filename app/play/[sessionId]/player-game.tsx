@@ -22,6 +22,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useCountdown } from "@/lib/use-countdown";
 import { useLiveSession } from "@/lib/use-live-session";
 import { t } from "@/strings/he";
+import { QuestionImage } from "@/components/question-image";
 
 type Props = { initialSession: SessionRow; playerId: string; initialScore: number };
 
@@ -143,6 +144,9 @@ function AnswerPad({
           </span>
         )}
       </div>
+      {question.image_path && (
+        <QuestionImage path={question.image_path} testId="phone-image" className="max-h-56 w-full" />
+      )}
 
       {chosen !== null && !message ? (
         <div data-testid="answer-received" className="flex flex-col items-center gap-2 py-8 text-center">

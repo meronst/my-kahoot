@@ -81,7 +81,7 @@ export function RoundsEditor({ quizId, rounds }: { quizId: string; rounds: Edita
           <ol className="flex flex-col gap-2">
             {round.questions.map((q, qi) => (
               <li key={q.id} data-testid="question" className="flex flex-col gap-2 rounded-md border border-current/10 p-2">
-                <QuestionEditor question={q} number={qi + 1}>
+                <QuestionEditor quizId={quizId} question={q} number={qi + 1}>
                   <MoveButtons
                     up={moveQuestion.bind(null, q.id, -1)}
                     down={moveQuestion.bind(null, q.id, 1)}
