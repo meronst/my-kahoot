@@ -28,9 +28,9 @@ test("host starts a session; a joining player appears in the lobby within 2s @sm
   await expect(page.getByTestId("join-qr").locator("svg")).toBeVisible();
   await expect(page.getByText(t.lobby.waitingForPlayers)).toBeVisible();
 
-  // Wait until the lobby's live subscription is ready (it re-loads the list once subscribed);
-  // a fixed short pause keeps the timing measurement below about the event itself.
-  await page.waitForTimeout(1500);
+  // Wait until the lobby's live subscription is ready, so the 2s below measures the event itself.
+  // (If this fails, the attribute shows the real state: CHANNEL_ERROR, TIMED_OUT... see KQ-28.)
+  await expect(page.getByTestId("lobby")).toHaveAttribute("data-realtime", "SUBSCRIBED", { timeout: 10_000 });
 
   // A "phone" joins: anonymous sign-in + player row for this session.
   const sessionId = page.url().split("/").pop()!;

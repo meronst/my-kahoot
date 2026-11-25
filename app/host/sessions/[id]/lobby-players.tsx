@@ -20,9 +20,13 @@ type Player = { id: string; nickname: string };
 
 export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string; initialPlayers: Player[] }) {
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
+  // Subscription state, shown as a data attribute: lets tests (and DevTools) see whether we're live.
+  const [realtimeStatus, setRealtimeStatus] = useState("CONNECTING");
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
+    let channel: ReturnType<typeof supabase.channel> | undefined;
+    let cancelled = false; // the page may close before the async setup below finishes
 
     /** Adds players we don't have yet (the same player may arrive twice: initial load + event). */
     const merge = (incoming: Player[]) =>
@@ -31,32 +35,45 @@ export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string;
         return [...current, ...incoming.filter((p) => !known.has(p.id))];
       });
 
-    const channel = supabase
-      .channel(`lobby:${sessionId}`)
-      // Fires for every new row in `players` for this session. RLS on the server ensures the host
-      // only receives rows of their own sessions.
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "players", filter: `session_id=eq.${sessionId}` },
-        (payload) => merge([{ id: payload.new.id as string, nickname: payload.new.nickname as string }]),
-      )
-      .subscribe(async (status) => {
-        // Players who joined between the server render and this subscription would be missed by
-        // the events alone, so once we're listening, load the full list once more.
-        if (status === "SUBSCRIBED") {
-          const { data } = await supabase
-            .from("players").select("id, nickname").eq("session_id", sessionId).order("joined_at");
-          if (data) merge(data);
-        }
-      });
+    async function subscribe() {
+      // Realtime filters events with the database's RLS rules for whoever the socket says it is.
+      // The login is in a cookie that the client loads asynchronously; if we subscribed right away,
+      // the socket would connect as a not-logged-in visitor and receive nothing (bug KQ-28).
+      // So: load the session first, then give Realtime the logged-in user's token.
+      await supabase.auth.getSession();
+      await supabase.realtime.setAuth();
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`lobby:${sessionId}`)
+        // Fires for every new row in `players` for this session. RLS on the server ensures the host
+        // only receives rows of their own sessions.
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "players", filter: `session_id=eq.${sessionId}` },
+          (payload) => merge([{ id: payload.new.id as string, nickname: payload.new.nickname as string }]),
+        )
+        .subscribe(async (status) => {
+          setRealtimeStatus(status);
+          // Players who joined between the server render and this subscription would be missed by
+          // the events alone, so once we're listening, load the full list once more.
+          if (status === "SUBSCRIBED") {
+            const { data } = await supabase
+              .from("players").select("id, nickname").eq("session_id", sessionId).order("joined_at");
+            if (data) merge(data);
+          }
+        });
+    }
+    void subscribe();
 
     return () => {
-      supabase.removeChannel(channel); // cleanup: close the subscription when leaving the page
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel); // cleanup: close the subscription when leaving
     };
   }, [sessionId]);
 
   return (
-    <section className="w-full max-w-4xl">
+    <section className="w-full max-w-4xl" data-testid="lobby" data-realtime={realtimeStatus}>
       <h2 className="mb-4 text-center text-2xl">
         {t.lobby.playersJoined}: <bdi data-testid="player-count">{players.length}</bdi>
       </h2>
