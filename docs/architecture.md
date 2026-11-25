@@ -113,4 +113,4 @@ Static files, played only on the projector; mute toggle in localStorage.
 ## 9. Operations
 - Keep-alive: daily GitHub Actions cron hits a health endpoint so Supabase doesn't pause.
 - `/host` shows a "system ready" indicator before a lecture.
-- Environments: local (Supabase CLI) → Vercel preview per PR → production on merge to main.
+- Environments: local (Supabase CLI in Docker) → CI (same local stack) → Vercel preview per PR and production, both on the one cloud Supabase project. Migrations deploy on merge to `release/**` or `main`. See [ADR 0002](decisions/0002-database-environments.md).

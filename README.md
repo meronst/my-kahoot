@@ -16,6 +16,19 @@ make install   # install dependencies
 make dev       # http://localhost:3000
 ```
 
+## Database (Supabase)
+
+The local database runs in Docker with the Supabase CLI. Migrations live in `supabase/migrations/`.
+
+```bash
+make db-start    # start local Supabase and apply migrations (needs Docker)
+make db-types    # regenerate lib/database.types.ts after changing a migration
+make db-reset    # wipe and rebuild the local DB
+```
+
+Copy `.env.example` to `.env.local` and fill in the cloud project's URL and publishable key to run the app against the cloud.
+Merges to `release/*` or `main` apply new migrations to the cloud project automatically (`.github/workflows/db-deploy.yml`, see [ADR 0002](docs/decisions/0002-database-environments.md)).
+
 ## Checks
 
 Every pull request into `release/*` or `main` runs the pre-merge gate (`.github/workflows/pre-merge.yml`):

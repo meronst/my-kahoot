@@ -92,11 +92,17 @@ jobs:
   integration:
     name: 6. Integration tests
     runs-on: ubuntu-latest
-    # KQ-4 adds a local Supabase stack here (supabase start) so tests hit a real database.
+    # A real Supabase stack (Postgres, auth, realtime, API) runs in Docker on the CI machine.
+    # `supabase start` applies every file in supabase/migrations, so tests see the exact schema
+    # the cloud project will get.
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - run: make db-start
+      - run: make db-types-check   # generated DB types must match the migrations
       - run: make test-integration
+      - if: always()
+        run: make db-stop
 
   build:
     name: 7. Production build
