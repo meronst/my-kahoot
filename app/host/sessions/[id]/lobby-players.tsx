@@ -44,8 +44,11 @@ export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string;
       await supabase.realtime.setAuth();
       if (cancelled) return;
 
+      // replication_ready: ask the server to tell us (a `system` event) when the database listener
+      // behind this channel is actually live. "SUBSCRIBED" alone only means the channel is joined;
+      // a player joining in the short gap before the listener is ready would be missed (KQ-28).
       channel = supabase
-        .channel(`lobby:${sessionId}`)
+        .channel(`lobby:${sessionId}`, { config: { broadcast: { replication_ready: true } } })
         // Fires for every new row in `players` for this session. RLS on the server ensures the host
         // only receives rows of their own sessions.
         .on(
@@ -53,15 +56,18 @@ export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string;
           { event: "INSERT", schema: "public", table: "players", filter: `session_id=eq.${sessionId}` },
           (payload) => merge([{ id: payload.new.id as string, nickname: payload.new.nickname as string }]),
         )
-        .subscribe(async (status) => {
-          setRealtimeStatus(status);
-          // Players who joined between the server render and this subscription would be missed by
-          // the events alone, so once we're listening, load the full list once more.
-          if (status === "SUBSCRIBED") {
-            const { data } = await supabase
-              .from("players").select("id, nickname").eq("session_id", sessionId).order("joined_at");
-            if (data) merge(data);
-          }
+        .on("system", {}, async (payload: { extension: string; status: string }) => {
+          if (payload.extension !== "system") return;
+          setRealtimeStatus(payload.status === "ok" ? "READY" : "REPLICATION_ERROR");
+          // Now that events flow, load the full list once more: catches anyone who joined between
+          // the server render and this moment. From here on, events cover every new player.
+          const { data } = await supabase
+            .from("players").select("id, nickname").eq("session_id", sessionId).order("joined_at");
+          if (data) merge(data);
+        })
+        .subscribe((status) => {
+          // SUBSCRIBED / CHANNEL_ERROR / TIMED_OUT / CLOSED. "READY" (above) comes after SUBSCRIBED.
+          if (status !== "SUBSCRIBED") setRealtimeStatus(status);
         });
     }
     void subscribe();

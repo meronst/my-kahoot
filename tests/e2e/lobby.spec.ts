@@ -29,8 +29,9 @@ test("host starts a session; a joining player appears in the lobby within 2s @sm
   await expect(page.getByText(t.lobby.waitingForPlayers)).toBeVisible();
 
   // Wait until the lobby's live subscription is ready, so the 2s below measures the event itself.
-  // (If this fails, the attribute shows the real state: CHANNEL_ERROR, TIMED_OUT... see KQ-28.)
-  await expect(page.getByTestId("lobby")).toHaveAttribute("data-realtime", "SUBSCRIBED", { timeout: 10_000 });
+  // READY = the database listener is live, not just the channel joined (KQ-28).
+  // If this fails, the attribute shows the real state: CHANNEL_ERROR, TIMED_OUT, REPLICATION_ERROR.
+  await expect(page.getByTestId("lobby")).toHaveAttribute("data-realtime", "READY", { timeout: 10_000 });
 
   // A "phone" joins: anonymous sign-in + player row for this session.
   const sessionId = page.url().split("/").pop()!;
