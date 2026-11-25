@@ -39,8 +39,13 @@ test("host starts a session; a joining player appears in the lobby within 2s @sm
   const nickname = `דנה ${Date.now() % 1000}`;
   const { error } = await admin().from("players").insert({ session_id: sessionId, user_id: player.userId, nickname });
   expect(error).toBeNull();
+  const insertedAt = Date.now();
 
-  // Must appear within 2 seconds, without reloading the page.
-  await expect(page.getByTestId("lobby-players").getByText(nickname)).toBeVisible({ timeout: 2000 });
+  // Must appear within 2 seconds, without reloading the page. We wait up to 10s so a failure
+  // reports the REAL delay (late vs. never arrived), then assert the 2s limit.
+  await expect(page.getByTestId("lobby-players").getByText(nickname)).toBeVisible({ timeout: 10_000 });
+  const delayMs = Date.now() - insertedAt;
+  console.log(`[lobby] player visible ${delayMs}ms after insert`);
+  expect(delayMs, `player appeared after ${delayMs}ms`).toBeLessThan(2000);
   await expect(page.getByTestId("player-count")).toHaveText("1");
 });
