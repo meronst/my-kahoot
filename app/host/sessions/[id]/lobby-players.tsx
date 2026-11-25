@@ -4,6 +4,11 @@
  * Starts with the players the server already found, then listens for new ones through Supabase
  * Realtime and adds them as they arrive, with no page reload.
  *
+ * Safety net: the list is also re-loaded every 1.5s while the lobby is open. In CI we saw the very
+ * first Realtime event after the Realtime server starts get lost even after it reported "ready"
+ * (bug KQ-28). Realtime stays the fast path (~0.8s); polling guarantees no player is ever missing
+ * from the screen. Cost: one small query every 1.5s from the projector only, never from phones.
+ *
  * Concept — useEffect: code that should run after the component appears on screen (and clean up when
  * it disappears). Here: open the Realtime subscription on mount, close it on unmount. The `return`
  * function inside useEffect is the cleanup. Think try/finally around the component's lifetime.
@@ -17,6 +22,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { t } from "@/strings/he";
 
 type Player = { id: string; nickname: string };
+
+/** How often the lobby re-checks the player list as a backup to Realtime (see header comment). */
+const LOBBY_POLL_MS = 1500;
 
 export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string; initialPlayers: Player[] }) {
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
@@ -72,8 +80,15 @@ export function LobbyPlayers({ sessionId, initialPlayers }: { sessionId: string;
     }
     void subscribe();
 
+    const poll = setInterval(async () => {
+      const { data } = await supabase
+        .from("players").select("id, nickname").eq("session_id", sessionId).order("joined_at");
+      if (data) merge(data);
+    }, LOBBY_POLL_MS);
+
     return () => {
       cancelled = true;
+      clearInterval(poll);
       if (channel) supabase.removeChannel(channel); // cleanup: close the subscription when leaving
     };
   }, [sessionId]);
