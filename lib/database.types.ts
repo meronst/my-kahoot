@@ -240,7 +240,7 @@ isOneToOne: false
         isSetofReturn: false
       } },
 "delete_expired_phones":
-{ Args: never; Returns: number
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "duplicate_quiz":
 { Args: { "p_quiz_id": string }; Returns: {
@@ -391,11 +391,8 @@ isOneToOne: false
         isSetofReturn: false
       } },
 "scheduled_jobs":
-{ Args: never; Returns: {
-              "active": boolean,
-"command": string,
-"jobname": string,
-"schedule": string
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,"command": string,"jobname": string,"schedule": string
             }[]
                            },
 "score_answer":
