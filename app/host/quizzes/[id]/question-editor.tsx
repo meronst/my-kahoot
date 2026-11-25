@@ -6,15 +6,14 @@
  * server-rendered pieces passed in as props (like passing an already-built widget into a constructor).
  *
  * The form keeps the inputs uncontrolled (defaultValue): the browser holds what is being typed, and
- * the FormData sent on submit is read by parseQuestionForm on the server. After a successful save we
- * call router.refresh() ourselves: the server-side refresh() did not reach the page when the action
- * returns a value through useActionState (seen in CI), so the summary line kept the old text.
- * The `key` below makes React rebuild the form from the fresh data.
+ * the FormData sent on submit is read by parseQuestionForm on the server. keepValuesOnSubmit stops
+ * React from clearing the form after a validation error (bug KQ-30). After a save, refresh() in the
+ * action re-renders the page with the saved data; the `key` below rebuilds the form from it.
  */
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useActionState, useState, type ReactNode } from "react";
+import { keepValuesOnSubmit } from "@/lib/keep-values-on-submit";
 import { TF_OPTIONS, TIMER_CHOICES } from "@/lib/question-form";
 import { t } from "@/strings/he";
 import { saveQuestion, type QuestionSaveState } from "./actions";
@@ -32,12 +31,10 @@ const input = "rounded-md border border-current/30 bg-transparent px-2 py-1";
 
 export function QuestionEditor({ question, number, children }: { question: EditableQuestion; number: number; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
-  const [state, action, pending] = useActionState<QuestionSaveState, FormData>(async (prev, formData) => {
-    const result = await saveQuestion(question.id, prev, formData);
-    if (result.saved) router.refresh(); // re-fetch the page's Server Components with the saved question
-    return result;
-  }, {});
+  const [state, action, pending] = useActionState<QuestionSaveState, FormData>(
+    saveQuestion.bind(null, question.id),
+    {},
+  );
   const correctIndex = question.options.findIndex((o) => o.correct);
 
   return (
@@ -53,7 +50,7 @@ export function QuestionEditor({ question, number, children }: { question: Edita
       </div>
 
       {open && (
-        <form key={JSON.stringify(question)} action={action} data-testid="question-form" className="flex flex-col gap-3">
+        <form key={JSON.stringify(question)} action={action} onSubmit={keepValuesOnSubmit(action)} data-testid="question-form" className="flex flex-col gap-3">
           <input type="hidden" name="type" value={question.type} />
           <label className="flex flex-col gap-1">
             <span>{t.editor.question}</span>
