@@ -239,6 +239,21 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"duplicate_quiz":
+{ Args: { "p_quiz_id": string }; Returns: {
+              "collect_phone": boolean,
+"created_at": string,
+"id": string,
+"owner_id": string,
+"scoring_mode": Database["public"]['Enums']["scoring_mode"],
+"title": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "quizzes"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "finish_session":
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
