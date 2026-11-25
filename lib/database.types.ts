@@ -155,7 +155,27 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "health":
+            "create_session":
+{ Args: { "p_quiz_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"health":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "is_host":
