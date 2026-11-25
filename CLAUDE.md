@@ -23,5 +23,6 @@ properties; docs and ADRs updated in the same PR; secrets only in .env.
   writing Next.js code (see AGENTS.md).
 - All UI text lives in `strings/he.ts`.
 - Game rules live in Postgres functions; the browser never sees answer keys before the reveal.
+- The Claude cloud sandbox has no Docker daemon: `make db-start` and integration tests can't run there; they run in CI. Fix `lib/database.types.ts` from the generated version CI prints.
 - Run `make check` before pushing. In environments without Playwright's browser download, run E2E with
   `PW_CHROME_PATH=/usr/bin/google-chrome make test-e2e`.

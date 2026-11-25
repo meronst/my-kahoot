@@ -11,8 +11,16 @@
 #   make check             everything to run before pushing
 
 #   make rtl-check         fail on physical left/right styling (see scripts/rtl-check.mjs)
+#
+# Database (local Supabase in Docker):
+#   make db-start          start the local stack and apply all migrations
+#   make db-reset          wipe the local DB and re-apply migrations from scratch
+#   make db-types          regenerate lib/database.types.ts from the local schema
+#   make db-types-check    fail if lib/database.types.ts is out of date (used by CI)
+#   make db-stop           stop the local stack
 
-.PHONY: install dev lint typecheck rtl-check test-unit test-integration test-e2e build check
+.PHONY: install dev lint typecheck rtl-check test-unit test-integration test-e2e build check \
+        db-start db-reset db-types db-types-check db-stop
 
 install:
 	npm ci
@@ -44,3 +52,24 @@ build:
 	npm run build
 
 check: lint typecheck rtl-check test-unit
+
+# Services the app doesn't use locally; skipping them makes `supabase start` faster.
+DB_EXCLUDE = studio,imgproxy,mailpit,logflare,vector,edge-runtime,supavisor
+
+db-start:
+	npx supabase start -x $(DB_EXCLUDE)
+
+db-reset:
+	npx supabase db reset
+
+db-types:
+	npx supabase gen types --lang typescript > lib/database.types.ts
+
+db-types-check:
+	npx supabase gen types --lang typescript > /tmp/database.types.ts
+	@diff -u lib/database.types.ts /tmp/database.types.ts || \
+	  (echo "::error::lib/database.types.ts is out of date. Run 'make db-types' and commit. Generated version:"; \
+	   cat /tmp/database.types.ts; exit 1)
+
+db-stop:
+	npx supabase stop
