@@ -89,6 +89,8 @@ lobby ──start──► question ──time up / host──► reveal ──n
 
 Host RPCs: `start_session`, `next_question`, `reveal_question`, `pause_session`, `resume_session`, `finish_session`.
 
+**Starting a session (KQ-7):** `create_session(quiz_id)` (security invoker, so RLS applies) inserts a session with a random 6-digit PIN, retrying on collision with an active session. `players` and `sessions` are in the `supabase_realtime` publication; the lobby subscribes to `players` INSERTs for its session and re-loads the list once subscribed, so no join is missed.
+
 **Realtime traffic per question (150 players):** question shown ~150 messages; answers ~150 (to the host only, spread over the timer); reveal ~150.
 `reveal_payload` carries the distribution, correct option, explanation, top-5 leaderboard and every player's score, so phones need no second request.
 

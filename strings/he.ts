@@ -38,7 +38,18 @@ export const he = {
     loading: "טוען…",
     signedInAs: "מחובר בתור",
     signOut: "יציאה",
-    comingSoon: "כאן תופיע רשימת החידונים",
+    quizzes: "החידונים שלי",
+    noQuizzes: "עדיין אין חידונים",
+    startSession: "התחלת חידון",
+  },
+  lobby: {
+    joinAt: "הצטרפות לחידון:",
+    scanOrEnter: "סרקו את הקוד או היכנסו לאתר והקלידו את הקוד",
+    pinLabel: "קוד המשחק",
+    playersJoined: "משתתפים שהצטרפו",
+    waitingForPlayers: "ממתינים למשתתפים…",
+    notFound: "החידון לא נמצא",
+    qrAlt: "קוד QR להצטרפות לחידון",
   },
 } as const;
 

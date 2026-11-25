@@ -10,6 +10,7 @@ Format: one section per version; entries reference Jira keys.
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Start a session from the host's quiz list: `create_session()` with unique 6-digit PIN; projector lobby with PIN, QR code and players appearing live (Supabase Realtime) (KQ-7)
 - Host login: `/host/login` (email + password, Hebrew errors), protected `/host`, sign out, `proxy.ts` session refresh and gate; host = `app_metadata.role = 'host'` (ADR 0003) (KQ-6)
 - Game schema: quizzes, rounds, questions, sessions, players, answers with Row Level Security, option validation, demo seed data, RLS integration tests (KQ-5)
 - Supabase setup: CLI config, first migration (`health()`), generated DB types checked in CI, integration tests against a local Supabase stack in CI, automatic migration deploy to the cloud project, ADR 0002 (KQ-4)
