@@ -39,6 +39,8 @@ test("create a quiz, save settings, duplicate it, delete with confirmation @smok
   await page.getByLabel(t.quiz.title).fill(" ");
   await page.getByRole("button", { name: t.quiz.save }).click();
   await expect(page.getByTestId("settings-error")).toHaveText(t.quiz.titleRequired);
+  // KQ-30 regression: a failed save keeps what was typed (React used to reset the form).
+  await expect(page.getByLabel(t.quiz.title)).toHaveValue(" ");
 
   // Back on the list: the quiz is there with its mode.
   await page.getByRole("link", { name: t.quiz.backToList }).click();

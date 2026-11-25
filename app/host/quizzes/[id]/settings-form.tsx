@@ -3,11 +3,13 @@
  *
  * useActionState (introduced in the login form) runs saveQuizSettings on the server and shows
  * "saved" or an error. `saveQuizSettings.bind(null, quiz.id)` pre-fills which quiz to save.
+ * keepValuesOnSubmit: after an error the fields keep what was typed (KQ-30).
  */
 "use client";
 
 import { useActionState } from "react";
 import { saveQuizSettings, type SettingsState } from "@/app/host/actions";
+import { keepValuesOnSubmit } from "@/lib/keep-values-on-submit";
 import { SCORING_MODES } from "@/lib/quiz-settings";
 import type { ScoringMode } from "@/lib/scoring";
 import { t } from "@/strings/he";
@@ -21,7 +23,7 @@ export function SettingsForm({ quiz }: { quiz: Quiz }) {
   );
 
   return (
-    <form action={action} className="flex flex-col gap-4 rounded-lg border border-current/20 p-4">
+    <form action={action} onSubmit={keepValuesOnSubmit(action)} className="flex flex-col gap-4 rounded-lg border border-current/20 p-4">
       <h2 className="text-xl font-bold">{t.quiz.settings}</h2>
 
       <label className="flex flex-col gap-1">
