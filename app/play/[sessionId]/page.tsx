@@ -1,8 +1,8 @@
 /**
  * app/play/[sessionId]/page.tsx — the player's screen on their phone (/play/<sessionId>).
  *
- * KQ-8: confirms the player is in, shows their nickname and score, and follows the game state
- * (waiting / paused / in progress / ended). The question and result screens come in KQ-11.
+ * Server part: finds this phone's player and the session, then hands them to <PlayerGame>, which
+ * follows the game live (questions, answers, results: KQ-11).
  *
  * Reconnect: the player is identified by their anonymous login (cookie), not by anything in the URL.
  * After a reload or a locked phone, the server finds "my player row in this session" through RLS
@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
-import { PlayerStatus } from "./player-status";
+import { PlayerGame } from "./player-game";
 
 export default function PlayPage({ params }: PageProps<"/play/[sessionId]">) {
   return (
@@ -41,19 +41,15 @@ async function Play({ params }: { params: Promise<{ sessionId: string }> }) {
   }
 
   // Readable because I'm a player in it (RLS: is_player_in).
-  const { data: session } = await supabase
-    .from("sessions").select("status").eq("id", sessionId).single();
+  const { data: session } = await supabase.from("sessions").select("*").eq("id", sessionId).single();
+  if (!session) return <p data-testid="not-joined" className="text-2xl">{t.play.notJoined}</p>;
 
   return (
     <>
-      <p className="text-xl">{t.play.youAreIn}</p>
-      <h1 data-testid="player-nickname" className="text-4xl font-bold">
+      <p data-testid="player-nickname" className="text-lg opacity-80">
         <bdi dir="auto">{player.nickname}</bdi>
-      </h1>
-      <p className="text-xl">
-        {t.play.score}: <bdi data-testid="player-score">{player.score}</bdi>
       </p>
-      <PlayerStatus sessionId={sessionId} initialStatus={session?.status ?? "lobby"} />
+      <PlayerGame initialSession={session} playerId={player.id} initialScore={player.score} />
     </>
   );
 }
