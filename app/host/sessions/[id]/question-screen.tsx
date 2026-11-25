@@ -13,6 +13,7 @@ import type { QuestionPayload } from "@/lib/game-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useCountdown } from "@/lib/use-countdown";
 import { t } from "@/strings/he";
+import { QuestionImage } from "@/components/question-image";
 
 type Props = {
   sessionId: string;
@@ -53,6 +54,10 @@ export function QuestionScreen({ sessionId, question, startedAt, playerCount, on
       <h1 data-testid="projector-question" className="text-center text-5xl font-bold leading-tight">
         {question.text}
       </h1>
+
+      {question.image_path && (
+        <QuestionImage path={question.image_path} testId="projector-image" className="max-h-[40vh] self-center" />
+      )}
 
       <div className="flex justify-center">
         {remaining === null ? (

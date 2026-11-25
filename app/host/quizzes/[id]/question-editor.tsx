@@ -17,6 +17,7 @@ import { keepValuesOnSubmit } from "@/lib/keep-values-on-submit";
 import { TF_OPTIONS, TIMER_CHOICES } from "@/lib/question-form";
 import { t } from "@/strings/he";
 import { saveQuestion, type QuestionSaveState } from "./actions";
+import { ImageField } from "./image-field";
 
 export type EditableQuestion = {
   id: string;
@@ -25,17 +26,20 @@ export type EditableQuestion = {
   options: { text: string; correct: boolean }[];
   time_limit_sec: number | null;
   explanation: string | null;
+  image_path: string | null;
 };
 
 const input = "rounded-md border border-current/30 bg-transparent px-2 py-1";
 
-export function QuestionEditor({ question, number, children }: { question: EditableQuestion; number: number; children: ReactNode }) {
+export function QuestionEditor({ quizId, question, number, children }: { quizId: string; question: EditableQuestion; number: number; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<QuestionSaveState, FormData>(
     saveQuestion.bind(null, question.id),
     {},
   );
   const correctIndex = question.options.findIndex((o) => o.correct);
+  // Rebuild the form only when its own fields change: adding an image must not wipe unsaved typing.
+  const { image_path: imagePath, ...formFields } = question;
 
   return (
     <>
@@ -49,8 +53,9 @@ export function QuestionEditor({ question, number, children }: { question: Edita
         {children}
       </div>
 
+      {open && <ImageField quizId={quizId} questionId={question.id} path={imagePath} />}
       {open && (
-        <form key={JSON.stringify(question)} action={action} onSubmit={keepValuesOnSubmit(action)} data-testid="question-form" className="flex flex-col gap-3">
+        <form key={JSON.stringify(formFields)} action={action} onSubmit={keepValuesOnSubmit(action)} data-testid="question-form" className="flex flex-col gap-3">
           <input type="hidden" name="type" value={question.type} />
           <label className="flex flex-col gap-1">
             <span>{t.editor.question}</span>

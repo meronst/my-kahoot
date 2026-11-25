@@ -328,6 +328,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"owns_quiz_folder":
+{ Args: { "p_object_name": string }; Returns: boolean
+                           },
 "owns_session":
 { Args: { "sid": string }; Returns: boolean
                            },

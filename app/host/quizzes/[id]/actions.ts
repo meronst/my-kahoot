@@ -10,6 +10,7 @@
 
 import { refresh } from "next/cache";
 import { getHost } from "@/lib/auth";
+import { IMAGE_BUCKET } from "@/lib/question-image";
 import { parseQuestionForm, TF_OPTIONS } from "@/lib/question-form";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
@@ -112,4 +113,29 @@ export async function moveQuestion(questionId: string, direction: -1 | 1): Promi
   const { error } = await supabase.rpc("move_question", { p_question_id: questionId, p_direction: direction });
   check(error, "move question");
   refresh();
+}
+
+const IMAGE_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.jpg$/;
+
+/**
+ * Attaches an uploaded image to a question, or removes it (path = null) (KQ-17).
+ * The browser has already uploaded the file to Storage; here we only record its path.
+ * The old file is deleted unless another question still uses it (a duplicated quiz shares images).
+ */
+export async function setQuestionImage(questionId: string, path: string | null): Promise<{ error?: string }> {
+  if (path !== null && !IMAGE_PATH.test(path)) return { error: t.editor.image.failed };
+  const supabase = await db();
+  const { data: before } = await supabase.from("questions").select("image_path").eq("id", questionId).maybeSingle();
+  if (!before) return { error: t.editor.image.failed };
+
+  const { data, error } = await supabase.from("questions").update({ image_path: path }).eq("id", questionId).select("id");
+  if (error || !data?.length) return { error: t.editor.image.failed };
+
+  const old = before.image_path;
+  if (old && old !== path) {
+    const { count } = await supabase.from("questions").select("id", { count: "exact", head: true }).eq("image_path", old);
+    if (!count) await supabase.storage.from(IMAGE_BUCKET).remove([old]); // best effort: a leftover file is harmless
+  }
+  refresh();
+  return {};
 }

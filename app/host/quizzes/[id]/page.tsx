@@ -35,7 +35,7 @@ async function QuizEditor({ params }: { params: Promise<{ id: string }> }) {
   // JOIN that comes back already grouped. Ordering of the nested list is set with referencedTable.
   const { data: roundRows, error } = await supabase
     .from("rounds")
-    .select("id, title, position, questions(id, type, text, options, time_limit_sec, explanation, position)")
+    .select("id, title, position, questions(id, type, text, options, time_limit_sec, explanation, image_path, position)")
     .eq("quiz_id", id)
     .order("position")
     .order("position", { referencedTable: "questions" });
