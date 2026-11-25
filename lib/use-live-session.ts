@@ -1,10 +1,12 @@
 /**
  * lib/use-live-session.ts — keeps a `sessions` row in sync with the database, live.
  *
- * Used by the projector. Combines the three reliability rules from bug KQ-28 (docs/architecture.md):
- * token before subscribing, "live" only after the replication-ready system event, and a polling
- * safety net. Polling every 1.5s is fine here because there's ONE projector per session; phones use
- * a lighter variant without polling.
+ * Used by the projector and by phones. Applies the reliability rules from bug KQ-28
+ * (docs/architecture.md): token before subscribing, and "live" only after the replication-ready
+ * system event. The safety net differs:
+ *   - projector (`poll: true`): re-reads every 1.5s; fine, there's ONE projector per session;
+ *   - phones (`poll: false`): no polling (150 phones × polling = load); instead they re-read when the
+ *     page becomes visible again (phone unlocked, app switched back), when a missed update is likely.
  *
  * Returns the current row, a setter (so a host action can show its result immediately instead of
  * waiting for the echo from Realtime), and the connection status for tests/debugging.
@@ -17,7 +19,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const POLL_MS = 1500;
 
-export function useLiveSession(initial: SessionRow) {
+export function useLiveSession(initial: SessionRow, { poll = true }: { poll?: boolean } = {}) {
   const [session, setSessionState] = useState<SessionRow>(initial);
   const [realtime, setRealtime] = useState("CONNECTING");
 
@@ -65,13 +67,18 @@ export function useLiveSession(initial: SessionRow) {
         });
     })();
 
-    const poll = setInterval(reload, POLL_MS);
+    const timer = poll ? setInterval(reload, POLL_MS) : undefined;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void reload();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
-      clearInterval(poll);
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
       if (channel) supabase.removeChannel(channel);
     };
-  }, [initial.id, setSession]);
+  }, [initial.id, setSession, poll]);
 
   return { session, setSession, realtime };
 }
