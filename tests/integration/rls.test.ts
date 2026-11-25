@@ -57,9 +57,12 @@ beforeAll(async () => {
 
 describe("host (email + password)", () => {
   it("reads the questions of their quiz, including answer keys", async () => {
-    const { data, error } = await host.from("questions").select("text, options");
+    // Only the demo quiz's questions: other test files create more quizzes for the same host.
+    const { data, error } = await host
+      .from("questions").select("text, options, rounds!inner(quiz_id)").eq("rounds.quiz_id", DEMO_QUIZ_ID);
     expect(error).toBeNull();
     expect(data).toHaveLength(3);
+    expect(JSON.stringify(data)).toContain('"correct":true');
   });
 
   it("reads all players and answers of their session", async () => {
