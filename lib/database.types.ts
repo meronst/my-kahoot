@@ -184,8 +184,30 @@ isOneToOne: false
 "is_player_in":
 { Args: { "sid": string }; Returns: boolean
                            },
+"join_session":
+{ Args: { "p_nickname": string,"p_pin": string }; Returns: {
+              "id": string,
+"joined_at": string,
+"nickname": string,
+"phone": string | null,
+"phone_consent_at": string | null,
+"score": number,
+"session_id": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "players"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "owns_session":
 { Args: { "sid": string }; Returns: boolean
+                           },
+"session_preview":
+{ Args: { "p_pin": string }; Returns: {
+              "collect_phone": boolean,"is_open": boolean,"quiz_title": string,"session_id": string,"status": Database["public"]['Enums']["session_status"]
+            }[]
                            },
 "valid_options":
 { Args: { "opts": Json,"qtype": Database["public"]['Enums']["question_type"] }; Returns: boolean
