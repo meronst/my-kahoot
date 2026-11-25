@@ -63,6 +63,8 @@ Validation in the database: `valid_options()` (CHECK constraint) enforces 2–4 
 
 **Host login (KQ-6):** `/host/login` posts to a Server Action (`signInWithPassword`); the session lives in cookies via `@supabase/ssr`. `proxy.ts` refreshes the token and redirects non-hosts away from `/host/*`; `getHost()` (`lib/auth.ts`) re-checks on every host page.
 
+**API grants (KQ-29):** since 2026 Supabase doesn't grant API access to new tables automatically. Every migration GRANTs exactly what it creates (`supabase/migrations/*_api_grants.sql` shows the pattern); `auto_expose_new_tables: false` in `supabase/config.jsonc` makes local/CI behave like the cloud. GRANT = may the role touch the table; RLS = which rows.
+
 **Security (Row Level Security):**
 - `quizzes`, `rounds`, `questions`: host only. Players **never** read `questions`, so answer keys can't leak.
 - Players see a question only through `sessions.question_payload` (options **without** the `correct` flag).

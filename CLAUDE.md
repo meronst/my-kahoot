@@ -22,6 +22,7 @@ properties; docs and ADRs updated in the same PR; secrets only in .env.
 - **Next.js 16 is newer than most training data.** Read the relevant guide in `node_modules/next/dist/docs/` before
   writing Next.js code (see AGENTS.md).
 - All UI text lives in `strings/he.ts`.
+- Every migration must GRANT what it creates (tables, functions, types): the cloud project and local config don't auto-expose new objects (KQ-29).
 - Game rules live in Postgres functions; the browser never sees answer keys before the reveal.
 - The Claude cloud sandbox has no Docker daemon: `make db-start` and integration tests can't run there; they run in CI. Fix `lib/database.types.ts` from the generated version CI prints.
 - Run `make check` before pushing. In environments without Playwright's browser download, run E2E with
