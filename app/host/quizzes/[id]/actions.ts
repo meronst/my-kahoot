@@ -92,8 +92,10 @@ export async function saveQuestion(
   const parsed = parseQuestionForm(formData);
   if (!parsed.ok) return { error: parsed.error };
   const supabase = await db();
-  const { error } = await supabase.from("questions").update(parsed.value).eq("id", questionId);
-  if (error) return { error: t.editor.errors.generic };
+  // .select() returns the updated rows: RLS turns "not your question" into zero rows, not an error,
+  // so an empty result must count as a failure too.
+  const { data, error } = await supabase.from("questions").update(parsed.value).eq("id", questionId).select("id");
+  if (error || !data?.length) return { error: t.editor.errors.generic };
   refresh();
   return { saved: true };
 }
