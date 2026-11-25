@@ -1,5 +1,7 @@
 /**
- * app/host/page.tsx — the host's home page (/host). Placeholder until the quiz list (KQ-15).
+ * app/host/page.tsx — the host's home page (/host): who's signed in, and the quizzes to start.
+ * The full quiz editor (create, edit, delete) comes in KQ-15; for now quizzes are listed with a
+ * "start" button that opens a live session lobby.
  *
  * Concept — Suspense and streaming (Next.js "Cache Components"):
  *   Anything that depends on the request (here: who is logged in, read from cookies) can't be part of
@@ -9,7 +11,9 @@
  */
 import { Suspense } from "react";
 import { getHost } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
+import { startSession } from "./actions";
 import { signOut } from "./login/actions";
 
 export default function HostPage() {
@@ -27,13 +31,13 @@ export default function HostPage() {
 async function SignedInHost() {
   const host = await getHost();
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex w-full max-w-md flex-col items-center gap-6">
       <p>
         {t.host.signedInAs}{" "}
         {/* <bdi> isolates the Latin email inside the Hebrew sentence so punctuation stays in place. */}
         <bdi data-testid="host-email">{host.email}</bdi>
       </p>
-      <p className="opacity-70">{t.host.comingSoon}</p>
+      <QuizList />
       {/* A form whose action is a Server Action: works even before JavaScript has loaded. */}
       <form action={signOut}>
         <button type="submit" className="rounded-md border border-current/30 px-4 py-2">
@@ -41,5 +45,35 @@ async function SignedInHost() {
         </button>
       </form>
     </div>
+  );
+}
+
+/** The host's quizzes, newest first. RLS returns only quizzes this host owns. */
+async function QuizList() {
+  const supabase = await createSupabaseServerClient();
+  const { data: quizzes, error } = await supabase
+    .from("quizzes")
+    .select("id, title")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  if (!quizzes.length) return <p className="opacity-70">{t.host.noQuizzes}</p>;
+
+  return (
+    <section className="w-full">
+      <h2 className="mb-3 text-xl font-bold">{t.host.quizzes}</h2>
+      <ul className="flex flex-col gap-2">
+        {quizzes.map((quiz) => (
+          <li key={quiz.id} className="flex items-center justify-between gap-4 rounded-md border border-current/20 p-3">
+            <span>{quiz.title}</span>
+            <form action={startSession.bind(null, quiz.id)}>
+              <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 font-bold text-white">
+                {t.host.startSession}
+              </button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
