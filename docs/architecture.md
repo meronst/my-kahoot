@@ -59,7 +59,9 @@ answers      id, session_id, player_id, question_id, option_idx, answered_at,
 
 Validation in the database: `valid_options()` (CHECK constraint) enforces 2–4 options (exactly 2 for true/false), exactly one correct, no empty texts. Positions are unique per round/quiz (deferrable, so reordering works in one transaction). A PIN is unique among sessions that aren't finished.
 
-**Who is who:** host = signed-in, non-anonymous user (`is_host()`); player = anonymous signed-in user.
+**Who is who:** host = signed-in, non-anonymous user with `app_metadata.role = 'host'` (`is_host()`, [ADR 0003](decisions/0003-host-role.md)); player = anonymous signed-in user.
+
+**Host login (KQ-6):** `/host/login` posts to a Server Action (`signInWithPassword`); the session lives in cookies via `@supabase/ssr`. `proxy.ts` refreshes the token and redirects non-hosts away from `/host/*`; `getHost()` (`lib/auth.ts`) re-checks on every host page.
 
 **Security (Row Level Security):**
 - `quizzes`, `rounds`, `questions`: host only. Players **never** read `questions`, so answer keys can't leak.

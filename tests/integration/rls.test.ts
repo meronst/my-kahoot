@@ -79,11 +79,27 @@ describe("host (email + password)", () => {
 describe("a second host", () => {
   it("sees none of the first host's quizzes or questions", async () => {
     const email = `host2-${Date.now()}@my-kahoot.local`;
-    const { error } = await admin().auth.admin.createUser({ email, password: "host2-password", email_confirm: true });
+    const { error } = await admin().auth.admin.createUser({
+      email, password: "host2-password", email_confirm: true, app_metadata: { role: "host" },
+    });
     expect(error).toBeNull();
     const host2 = await signedIn(email, "host2-password");
     expect((await host2.from("quizzes").select("id")).data).toEqual([]);
     expect((await host2.from("questions").select("id")).data).toEqual([]);
+  });
+});
+
+describe("an email account WITHOUT the host role (KQ-6)", () => {
+  // Sign-ups stay enabled (players need them), so anyone can register an email account.
+  // Without app_metadata.role = 'host' such an account must not be able to do anything.
+  it("cannot create a quiz or see any quiz", async () => {
+    const email = `stranger-${Date.now()}@my-kahoot.local`;
+    const { error } = await admin().auth.admin.createUser({ email, password: "stranger-pass", email_confirm: true });
+    expect(error).toBeNull();
+    const stranger = await signedIn(email, "stranger-pass");
+    expect((await stranger.from("quizzes").select("id")).data).toEqual([]);
+    const insert = await stranger.from("quizzes").insert({ title: "לא מורשה" });
+    expect(insert.error).not.toBeNull();
   });
 });
 

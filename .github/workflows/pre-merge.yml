@@ -121,6 +121,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # The app under test needs a database: start local Supabase (with the demo seed) and point
+      # the app at it. Values written to $GITHUB_ENV are visible to all later steps of this job.
+      - run: make db-start
+      - run: node scripts/supabase-env.mjs >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: make test-e2e
       - if: failure()

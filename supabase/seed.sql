@@ -21,7 +21,7 @@ insert into auth.users (
   'demo-host@my-kahoot.local',
   extensions.crypt('demo-password-123', extensions.gen_salt('bf')),
   now(),
-  '{"provider":"email","providers":["email"]}', '{}', now(), now(),
+  '{"provider":"email","providers":["email"],"role":"host"}', '{}', now(), now(),  -- role:host = may manage quizzes
   '', '', '', ''
 );
 
