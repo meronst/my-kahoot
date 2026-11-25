@@ -1,7 +1,7 @@
 /**
  * app/host/quizzes/[id]/page.tsx — editing one quiz (/host/quizzes/<id>).
  * KQ-15: the quiz's settings (title, scoring mode, collect phone numbers).
- * KQ-16: the rounds and questions editor below the settings.
+ * KQ-16: the rounds and questions editor below the settings. KQ-18: import from Excel/CSV.
  */
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import { getHost } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
+import { ImportPanel } from "./import-panel";
 import { RoundsEditor, type EditableRound } from "./rounds-editor";
 import type { EditableQuestion } from "./question-editor";
 import { SettingsForm } from "./settings-form";
@@ -52,6 +53,7 @@ async function QuizEditor({ params }: { params: Promise<{ id: string }> }) {
       <h1 data-testid="quiz-heading" className="text-3xl font-bold">{quiz.title}</h1>
       <SettingsForm quiz={quiz} />
       <RoundsEditor quizId={quiz.id} rounds={rounds} />
+      <ImportPanel quizId={quiz.id} />
     </div>
   );
 }
