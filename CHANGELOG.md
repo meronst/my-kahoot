@@ -11,6 +11,7 @@ Format: one section per version; entries reference Jira keys.
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Players join from their phones: PIN entry on `/`, `/j/<PIN>` with the quiz title and nickname, `/play/<session>` with live game state; reconnect keeps name and score; `session_preview()` and `join_session()` (KQ-8)
 - Start a session from the host's quiz list: `create_session()` with unique 6-digit PIN; projector lobby with PIN, QR code and players appearing live (Supabase Realtime) (KQ-7)
 - Host login: `/host/login` (email + password, Hebrew errors), protected `/host`, sign out, `proxy.ts` session refresh and gate; host = `app_metadata.role = 'host'` (ADR 0003) (KQ-6)
 - Game schema: quizzes, rounds, questions, sessions, players, answers with Row Level Security, option validation, demo seed data, RLS integration tests (KQ-5)

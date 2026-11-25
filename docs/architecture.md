@@ -102,6 +102,8 @@ Host RPCs: `start_session`, `next_question`, `reveal_question`, `pause_session`,
 **Realtime traffic per question (150 players):** question shown ~150 messages; answers ~150 (to the host only, spread over the timer); reveal ~150.
 `reveal_payload` carries the distribution, correct option, explanation, top-5 leaderboard and every player's score, so phones need no second request.
 
+**Joining (KQ-8):** the phone signs in anonymously **in the browser** (so Supabase's per-IP limit counts the hall, not Vercel's servers), then calls `join_session(pin, nickname)`. Rules live in the function: reconnect returns the existing player for the same login (any state), finished/expired sessions refuse, new players only in `lobby`/`paused`, nickname 1–20 chars and unique per session. `session_preview(pin)` gives the join page only the title and open/closed. `proxy.ts` refreshes logins on `/j` and `/play` too (lectures outlast the 1-hour token). Phones don't poll: they re-sync on Realtime READY and when the page becomes visible again.
+
 **Timer:** the server stores `question_started_at`; phones learn the server-clock offset on join. `submit_answer()` rejects answers after `started_at + time_limit` + 1s grace.
 
 **Scoring** (inside `submit_answer()`):

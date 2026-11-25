@@ -2,10 +2,12 @@
  * proxy.ts — runs BEFORE every /host request (Next.js 16 renamed "middleware" to "proxy").
  *
  * Two jobs:
- *  1. Keep the login fresh. Login tokens expire after about an hour; the client library refreshes
- *     them using a long-lived refresh token. Server Components can't write cookies, so the refresh
- *     has to happen here, where we can set cookies on the response.
- *  2. Fast gate: a visitor who isn't the host is redirected to /host/login before any page renders.
+ *  1. Keep the login fresh, for the host AND for players (/j, /play). Login tokens expire after about
+ *     an hour and a lecture can be longer; the client library refreshes them using a long-lived
+ *     refresh token. Server Components can't write cookies, so the refresh has to happen here,
+ *     where we can set cookies on the response.
+ *  2. Fast gate, /host only: a visitor who isn't the host is redirected to /host/login before any
+ *     page renders.
  *     Pages still call getHost() themselves (defense in depth); this just avoids rendering for nothing.
  *
  * Concept — the request/response pair: `request` is what the browser sent; we return a response
@@ -39,8 +41,9 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const isHost = isHostClaims(data?.claims as Record<string, unknown> | undefined);
 
-  const isLoginPage = request.nextUrl.pathname === "/host/login";
-  if (!isHost && !isLoginPage) {
+  const { pathname } = request.nextUrl;
+  const isHostArea = pathname.startsWith("/host") && pathname !== "/host/login";
+  if (isHostArea && !isHost) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/host/login";
     const redirect = NextResponse.redirect(loginUrl);
@@ -51,7 +54,7 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-// Only host pages pass through the proxy; player pages and static files don't pay for it.
+// Host pages and player pages pass through the proxy; the home page and static files don't.
 export const config = {
-  matcher: ["/host/:path*"],
+  matcher: ["/host/:path*", "/j/:path*", "/play/:path*"],
 };
