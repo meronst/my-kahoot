@@ -43,7 +43,7 @@ All pages are `lang="he" dir="rtl"`. Phone screens use large text and buttons.
 ## 3. Data model (Postgres)
 
 ```
-quizzes      id, title, scoring_mode (speed|points|results), collect_phone bool, created_at
+quizzes      id, owner_id → auth.users, title, scoring_mode (speed|points|results), collect_phone bool, created_at
 rounds       id, quiz_id → quizzes, position, title
 questions    id, round_id → rounds, position, type (mc|tf), text, image_path,
              time_limit_sec (null = no timer), explanation,
@@ -57,11 +57,21 @@ answers      id, session_id, player_id, question_id, option_idx, answered_at,
              is_correct, points                         UNIQUE(player_id, question_id)
 ```
 
+Validation in the database: `valid_options()` (CHECK constraint) enforces 2–4 options (exactly 2 for true/false), exactly one correct, no empty texts. Positions are unique per round/quiz (deferrable, so reordering works in one transaction). A PIN is unique among sessions that aren't finished.
+
+**Who is who:** host = signed-in, non-anonymous user (`is_host()`); player = anonymous signed-in user.
+
 **Security (Row Level Security):**
 - `quizzes`, `rounds`, `questions`: host only. Players **never** read `questions`, so answer keys can't leak.
 - Players see a question only through `sessions.question_payload` (options **without** the `correct` flag).
 - `players`: a player reads and updates only their own row.
-- `answers`: inserted only via `submit_answer()`; players can't read other players' answers.
+- `answers`: inserted only via `submit_answer()`; players can't read any answers (their own result comes in `reveal_payload`).
+- `sessions`: a player can read only the session they joined (`is_player_in()`).
+- Not-logged-in visitors are denied every game table.
+- `owns_session()` / `is_player_in()` are SECURITY DEFINER helpers so policies that reference each other don't recurse.
+- Tested in `tests/integration/rls.test.ts`.
+
+**Anonymous sign-in rate limit (production risk):** Supabase limits anonymous sign-ins per IP per hour (default 30). A lecture hall on one Wi-Fi shares one IP, so this must be raised in the cloud project (Authentication → Rate Limits) before the first real lecture (KQ-8).
 
 ## 4. Live session: state machine
 

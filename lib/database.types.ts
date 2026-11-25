@@ -23,7 +23,133 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            [_ in never]: never
+            "answers": {
+                  Row: {
+                    "answered_at": string,"id": string,"is_correct": boolean,"option_idx": number,"player_id": string,"points": number,"question_id": string,"session_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answered_at"?: string,"id"?: string,"is_correct": boolean,"option_idx": number,"player_id": string,"points"?: number,"question_id": string,"session_id": string
+                  }
+                  Update: {
+                    "answered_at"?: string,"id"?: string,"is_correct"?: boolean,"option_idx"?: number,"player_id"?: string,"points"?: number,"question_id"?: string,"session_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "answers_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "answers_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "questions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "answers_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"players": {
+                  Row: {
+                    "id": string,"joined_at": string,"nickname": string,"phone": string | null,"phone_consent_at": string | null,"score": number,"session_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"joined_at"?: string,"nickname": string,"phone"?: string | null,"phone_consent_at"?: string | null,"score"?: number,"session_id": string,"user_id": string
+                  }
+                  Update: {
+                    "id"?: string,"joined_at"?: string,"nickname"?: string,"phone"?: string | null,"phone_consent_at"?: string | null,"score"?: number,"session_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "players_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"questions": {
+                  Row: {
+                    "explanation": string | null,"id": string,"image_path": string | null,"options": NonNullable<Json>,"position": number,"round_id": string,"text": string,"time_limit_sec": number | null,"type": Database["public"]['Enums']["question_type"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "explanation"?: string | null,"id"?: string,"image_path"?: string | null,"options": NonNullable<Json>,"position": number,"round_id": string,"text": string,"time_limit_sec"?: number | null,"type": Database["public"]['Enums']["question_type"]
+                  }
+                  Update: {
+                    "explanation"?: string | null,"id"?: string,"image_path"?: string | null,"options"?: NonNullable<Json>,"position"?: number,"round_id"?: string,"text"?: string,"time_limit_sec"?: number | null,"type"?: Database["public"]['Enums']["question_type"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "questions_round_id_fkey"
+      columns: ["round_id"]
+isOneToOne: false
+      referencedRelation: "rounds"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quizzes": {
+                  Row: {
+                    "collect_phone": boolean,"created_at": string,"id": string,"owner_id": string,"scoring_mode": Database["public"]['Enums']["scoring_mode"],"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "collect_phone"?: boolean,"created_at"?: string,"id"?: string,"owner_id"?: string,"scoring_mode"?: Database["public"]['Enums']["scoring_mode"],"title": string
+                  }
+                  Update: {
+                    "collect_phone"?: boolean,"created_at"?: string,"id"?: string,"owner_id"?: string,"scoring_mode"?: Database["public"]['Enums']["scoring_mode"],"title"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"rounds": {
+                  Row: {
+                    "id": string,"position": number,"quiz_id": string,"title": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"position": number,"quiz_id": string,"title"?: string | null
+                  }
+                  Update: {
+                    "id"?: string,"position"?: number,"quiz_id"?: string,"title"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rounds_quiz_id_fkey"
+      columns: ["quiz_id"]
+isOneToOne: false
+      referencedRelation: "quizzes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sessions": {
+                  Row: {
+                    "created_at": string,"expires_at": string,"id": string,"pin": string,"question_idx": number,"question_payload": Json | null,"question_started_at": string | null,"quiz_id": string,"reveal_payload": Json | null,"round_idx": number,"status": Database["public"]['Enums']["session_status"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"expires_at"?: string,"id"?: string,"pin": string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id": string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
+                  }
+                  Update: {
+                    "created_at"?: string,"expires_at"?: string,"id"?: string,"pin"?: string,"question_idx"?: number,"question_payload"?: Json | null,"question_started_at"?: string | null,"quiz_id"?: string,"reveal_payload"?: Json | null,"round_idx"?: number,"status"?: Database["public"]['Enums']["session_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sessions_quiz_id_fkey"
+      columns: ["quiz_id"]
+isOneToOne: false
+      referencedRelation: "quizzes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Views: {
             [_ in never]: never
@@ -31,10 +157,22 @@ export type Database = {
           Functions: {
             "health":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"is_host":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_player_in":
+{ Args: { "sid": string }; Returns: boolean
+                           },
+"owns_session":
+{ Args: { "sid": string }; Returns: boolean
+                           },
+"valid_options":
+{ Args: { "opts": Json,"qtype": Database["public"]['Enums']["question_type"] }; Returns: boolean
                            }
           }
           Enums: {
-            [_ in never]: never
+            "question_type": "mc"|"tf","scoring_mode": "speed"|"points"|"results","session_status": "lobby"|"question"|"reveal"|"paused"|"finished"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -154,7 +292,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "question_type": ["mc", "tf"],"scoring_mode": ["speed", "points", "results"],"session_status": ["lobby", "question", "reveal", "paused", "finished"]
           }
         }
 } as const
