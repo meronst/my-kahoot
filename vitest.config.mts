@@ -1,5 +1,5 @@
 /**
- * vitest.config.ts — configuration for Vitest, the unit and integration test runner.
+ * vitest.config.mts (.mts = TypeScript as an ES module) — configuration for Vitest, the unit and integration test runner.
  *
  * Vitest is the JavaScript world's JUnit/pytest: `describe` = test class, `it` = test method,
  * `expect(x).toBe(y)` = assertEquals.

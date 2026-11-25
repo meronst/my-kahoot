@@ -1,0 +1,18 @@
+# .github/actions/setup — reusable "prepare the machine" step for every CI job.
+#
+# Concept — composite action: a few workflow steps packaged under one name, like a helper method.
+# Each job in pre-merge.yml calls `uses: ./.github/actions/setup` instead of repeating these steps.
+#
+# Node 22 matches local development. `cache: npm` keeps downloaded packages between runs,
+# so `npm ci` (clean install from package-lock.json) takes seconds instead of a minute.
+name: Setup
+description: Install Node.js 22 and the project's npm dependencies
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+    - run: npm ci
+      shell: bash

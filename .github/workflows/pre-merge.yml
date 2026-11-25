@@ -1,0 +1,125 @@
+# .github/workflows/pre-merge.yml — the pre-merge gate.
+#
+# Runs on every pull request into a version branch (release/vX.Y) or into main.
+# Each job below is a *required status check* in branch protection, so GitHub's Merge button stays
+# disabled until all of them are green.
+#
+# Concept — GitHub Actions: each `job` runs on a fresh Linux machine; jobs run in parallel unless
+# `needs:` says otherwise. `steps` run in order inside a job.
+#
+# The commands are Makefile targets, so CI runs exactly what you run locally.
+
+name: pre-merge
+
+on:
+  pull_request:
+    branches: [main, "release/**"]
+
+# A new push to the same PR cancels the run still going for the previous push.
+concurrency:
+  group: pre-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Least privilege: jobs can read code and PR metadata, nothing else.
+# pull-requests: read is needed by the secret scan to list the PR's commits (bug KQ-24).
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  conventions:
+    name: 1. Conventions (branch, PR title, Jira key)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name and PR title
+        # Values go through env vars, never pasted into the script, so a crafted PR title can't inject shell commands.
+        env:
+          HEAD: ${{ github.head_ref }}
+          BASE: ${{ github.base_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -e
+          if [[ "$BASE" == main ]]; then
+            # Into main: only a version branch or a hotfix
+            [[ "$HEAD" =~ ^(release/v[0-9]+\.[0-9]+|hotfix/[A-Z][A-Z0-9]+-[0-9]+-.+)$ ]] \
+              || { echo "::error::Only release/vX.Y or hotfix/KEY-n-* may merge into main (got '$HEAD')"; exit 1; }
+          else
+            # Into a version branch: work branches carrying a Jira key
+            [[ "$HEAD" =~ ^(feature|bugfix|refactor|chore|docs)/[A-Z][A-Z0-9]+-[0-9]+-.+$ ]] \
+              || { echo "::error::Branch must be <type>/<KEY>-<num>-desc (got '$HEAD')"; exit 1; }
+          fi
+          # PR title: conventional commit + Jira key(s), e.g. "feat(quiz): add round pause (KQ-12)" or "(KQ-3, KQ-23)"
+          [[ "$TITLE" =~ ^(feat|fix|refactor|test|docs|chore|style|perf|release)(\(.+\))?:\ .+\([A-Z][A-Z0-9]+-[0-9]+(,\ ?[A-Z][A-Z0-9]+-[0-9]+)*\)$ ]] \
+            || { echo "::error::PR title must be 'type(scope): description (KEY-123)'"; exit 1; }
+          echo "Conventions OK"
+
+  rtl-check:
+    name: 2. RTL check (no physical left/right styling)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: make rtl-check
+
+  secrets:
+    name: 3. Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # full history, so a secret committed and then deleted is still found
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  quality:
+    name: 4. Lint + type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: make lint
+      - run: make typecheck
+
+  unit:
+    name: 5. Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: make test-unit
+
+  integration:
+    name: 6. Integration tests
+    runs-on: ubuntu-latest
+    # KQ-4 adds a local Supabase stack here (supabase start) so tests hit a real database.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: make test-integration
+
+  build:
+    name: 7. Production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: make build
+
+  e2e:
+    name: 8. E2E (smoke → version branch, full → main)
+    needs: [quality, unit, integration, build] # only spend time on browser tests once the basics pass
+    runs-on: ubuntu-latest
+    env:
+      E2E_SCOPE: ${{ github.base_ref == 'main' && 'full' || 'smoke' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npx playwright install --with-deps chromium
+      - run: make test-e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
