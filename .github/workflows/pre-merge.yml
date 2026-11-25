@@ -126,7 +126,15 @@ jobs:
       - run: make db-start
       - run: node scripts/supabase-env.mjs >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
-      - run: make test-e2e
+      # The app server's log is part of the output ([WebServer] lines). Keep a copy and fail on
+      # render errors even when the tests themselves pass (regression guard for bug KQ-27).
+      - name: Run E2E and check the server log
+        run: |
+          set -o pipefail
+          make test-e2e 2>&1 | tee e2e-output.log
+          if grep -E "\[WebServer\] (Error|⨯)" e2e-output.log; then
+            echo "::error::The app server logged errors during E2E (see lines above)"; exit 1
+          fi
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

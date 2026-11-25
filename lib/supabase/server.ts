@@ -14,6 +14,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import type { Database } from "@/lib/database.types";
 import { supabaseEnv } from "./env";
 
@@ -23,6 +24,10 @@ export async function createSupabaseServerClient() {
   // request, don't prerender it". Anything before it would run at build time, where there's no
   // request and no Supabase settings.
   const cookieStore = await cookies();
+  // `connection()` = "wait for a live request". Cookies alone aren't enough: with partial prefetching,
+  // Next.js may render ahead of time WITH cookies but without a request, and the Supabase client reads
+  // the clock (Date.now) to check token expiry, which Next.js forbids during prerendering (bug KQ-27).
+  await connection();
   const { url, publishableKey } = supabaseEnv();
 
   return createServerClient<Database>(url, publishableKey, {
