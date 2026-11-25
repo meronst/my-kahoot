@@ -1,0 +1,43 @@
+/*
+ * app/globals.css — global styles, imported once by app/layout.tsx.
+ *
+ * Tailwind CSS v4: one import pulls in the whole utility-class system.
+ * We style with classes in the markup (e.g. `text-center p-4`) instead of writing CSS rules.
+ *
+ * RTL rule for this project: never use physical left/right properties.
+ * Use logical ones that follow the text direction:
+ *   margin-left      → margin-inline-start   (Tailwind: ms-4)
+ *   padding-right    → padding-inline-end    (Tailwind: pe-4)
+ *   text-align: left → text-align: start     (Tailwind: text-start)
+ * In RTL, "start" is the right side; if we ever render LTR, it flips automatically.
+ * The CI "RTL check" fails the build if a physical property sneaks in.
+ */
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/*
+ * @theme exposes our variables to Tailwind, so classes like `bg-background`
+ * and `font-sans` use them. --font-heebo is created by next/font in layout.tsx.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-heebo), system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
