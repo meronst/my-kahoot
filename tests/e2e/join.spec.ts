@@ -78,14 +78,14 @@ test("a finished session shows 'this quiz has ended' @smoke", async ({ page }) =
   await expect(page.getByTestId("join-closed")).toHaveText(t.join.ended);
 });
 
-test("an expired session shows 'this quiz has ended'", async ({ page }) => {
+test("an expired session shows 'this quiz has ended' @smoke", async ({ page }) => {
   const session = await newSession();
   await admin().from("sessions").update({ expires_at: new Date(Date.now() - 60_000).toISOString() }).eq("id", session.id);
   await page.goto(`/j/${session.pin}`);
   await expect(page.getByTestId("join-closed")).toHaveText(t.join.ended);
 });
 
-test("the phone follows the game state live (pause, end)", async ({ page }) => {
+test("the phone follows the game state live (pause, end) @smoke", async ({ page }) => {
   const session = await newSession();
   await join(page, session.pin, "שרה");
   const status = page.getByTestId("player-status");
