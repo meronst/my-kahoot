@@ -155,7 +155,47 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "create_session":
+            "_lock_hosted_session":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"_show_question":
+{ Args: { "p_idx": number,"p_round": number,"p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"create_session":
 { Args: { "p_quiz_id": string }; Returns: {
               "created_at": string,
 "expires_at": string,
@@ -201,13 +241,107 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"next_question":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "owns_session":
 { Args: { "sid": string }; Returns: boolean
+                           },
+"quiz_sequence":
+{ Args: { "p_quiz_id": string }; Returns: {
+              "question_id": string,"question_idx": number,"round_count": number,"round_idx": number,"round_size": number
+            }[]
+                           },
+"resume_session":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"reveal_question":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"score_answer":
+{ Args: { "p_correct": boolean,"p_elapsed_ms": number,"p_limit_sec": number,"p_mode": Database["public"]['Enums']["scoring_mode"] }; Returns: number
+                           },
+"server_time":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "session_preview":
 { Args: { "p_pin": string }; Returns: {
               "collect_phone": boolean,"is_open": boolean,"quiz_title": string,"session_id": string,"status": Database["public"]['Enums']["session_status"]
             }[]
+                           },
+"start_session":
+{ Args: { "p_session_id": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"id": string,
+"pin": string,
+"question_idx": number,
+"question_payload": Json | null,
+"question_started_at": string | null,
+"quiz_id": string,
+"reveal_payload": Json | null,
+"round_idx": number,
+"status": Database["public"]['Enums']["session_status"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "sessions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"submit_answer":
+{ Args: { "p_option_idx": number,"p_session_id": string }; Returns: Json
                            },
 "valid_options":
 { Args: { "opts": Json,"qtype": Database["public"]['Enums']["question_type"] }; Returns: boolean
