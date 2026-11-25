@@ -119,6 +119,8 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
 
 **Pause (KQ-13):** after a round's last question `next_question` sets `paused` and keeps `reveal_payload`, so the pause screen shows the standings from the last reveal; `round_idx` already points at the next round. The pause screen repeats the PIN/QR because new players may join during a pause (`join_session` allows `lobby` and `paused`).
 
+**End of game (KQ-14):** `_finish()` sets `finished` and writes `sessions.final_payload` once: `ranks` per player (SQL `rank()`, ties share a rank), top-3 `podium`, `show_scores`. Reached by `next_question` after the last round or by `finish_session` (host ends early; allowed in lobby/reveal/paused, not mid-question so given answers count).
+
 ## 5. Authoring & import
 - Editor: forms per question, drag to reorder, image upload (resized in the browser to ≤ 1600px, stored in Supabase Storage).
 - Import: Excel/CSV template parsed in the browser (SheetJS), per-row Hebrew validation, preview, save.

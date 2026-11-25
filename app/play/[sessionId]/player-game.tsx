@@ -17,7 +17,7 @@
 
 import { useState } from "react";
 import { answerStyle } from "@/lib/answer-style";
-import { questionPayload, revealPayload, type SessionRow, type SessionStatus } from "@/lib/game-types";
+import { finalPayload, questionPayload, revealPayload, type SessionRow, type SessionStatus } from "@/lib/game-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useCountdown } from "@/lib/use-countdown";
 import { useLiveSession } from "@/lib/use-live-session";
@@ -36,8 +36,11 @@ export function PlayerGame({ initialSession, playerId, initialScore }: Props) {
   const question = questionPayload(session);
   const reveal = revealPayload(session);
 
-  // Total score: from the latest reveal (computed by the database), otherwise what the page loaded with.
-  const score = reveal?.results[playerId]?.score ?? initialScore;
+  const final = finalPayload(session);
+  // Total score: final standings if the game is over, else the latest reveal (both computed by the
+  // database), otherwise what the page loaded with.
+  const score = final?.ranks[playerId]?.score ?? reveal?.results[playerId]?.score ?? initialScore;
+  const myRank = final?.show_scores ? final.ranks[playerId]?.rank : undefined;
 
   const waiting = WAITING_TEXT[session.status];
 
@@ -62,7 +65,13 @@ export function PlayerGame({ initialSession, playerId, initialScore }: Props) {
         />
       )}
 
-      {(reveal?.show_scores ?? true) && (
+      {session.status === "finished" && myRank !== undefined && final && (
+        <p data-testid="final-rank" className="text-3xl font-black">
+          {t.play.yourPlace}: <bdi>{myRank}</bdi> {t.play.outOf} <bdi>{final.players}</bdi>
+        </p>
+      )}
+
+      {(final?.show_scores ?? reveal?.show_scores ?? true) && (
         <p className="text-xl">
           {t.play.totalScore}: <bdi data-testid="player-score">{score}</bdi>
         </p>

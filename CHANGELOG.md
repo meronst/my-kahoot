@@ -11,6 +11,7 @@ Format: one section per version; entries reference Jira keys.
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Final results: `final_payload` with competition ranks (ties share a rank) and top-3 podium; projector podium; phone shows 'place X of N'; host can end early between questions (two-click confirm); results mode shows no podium (KQ-14)
 - Pause between rounds: projector shows standings, the next round and the PIN/QR for late joiners; phones show the break; resume continues with the next round (KQ-13)
 - Phone game screens: full question, large colored answer buttons, countdown, one tap = one answer (locked instantly, remembered across reload), 'answer received', result with correct/wrong, points and total score (KQ-11)
 - Projector screens: live question with colored options, server-clock countdown and answer counter; auto-reveal on time-out or when everyone answered; reveal with distribution, correct answer, explanation and top 5; one main button + Space key for start/reveal/next/resume (KQ-10)
