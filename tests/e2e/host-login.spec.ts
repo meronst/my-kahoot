@@ -23,7 +23,8 @@ test("wrong password shows a Hebrew error @smoke", async ({ page }) => {
   await page.getByLabel(t.login.password).fill("not-the-password");
   await page.getByRole("button", { name: t.login.submit }).click();
 
-  await expect(page.getByRole("alert")).toHaveText(t.login.errors.invalidCredentials);
+  // By test id: Next.js adds its own hidden role="alert" element (route announcer), see bug KQ-26.
+  await expect(page.getByTestId("login-error")).toHaveText(t.login.errors.invalidCredentials);
   await expect(page).toHaveURL(/\/host\/login$/);
   // The email stays filled in so the host only retypes the password.
   await expect(page.getByLabel(t.login.email)).toHaveValue(DEMO_HOST.email);

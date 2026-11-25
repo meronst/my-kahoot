@@ -49,7 +49,7 @@ export function LoginForm() {
 
       {/* role="alert" makes screen readers announce the error as soon as it appears. */}
       {state.error && (
-        <p role="alert" className="text-red-600 dark:text-red-400">
+        <p role="alert" data-testid="login-error" className="text-red-600 dark:text-red-400">
           {state.error}
         </p>
       )}
