@@ -10,7 +10,9 @@
 #   make build             production build
 #   make check             everything to run before pushing
 
-.PHONY: install dev lint typecheck test-unit test-integration test-e2e build check
+#   make rtl-check         fail on physical left/right styling (see scripts/rtl-check.mjs)
+
+.PHONY: install dev lint typecheck rtl-check test-unit test-integration test-e2e build check
 
 install:
 	npm ci
@@ -25,6 +27,9 @@ typecheck:
 	npx next typegen
 	npm run typecheck
 
+rtl-check:
+	node scripts/rtl-check.mjs
+
 test-unit:
 	npm run test:unit
 
@@ -38,4 +43,4 @@ test-e2e:
 build:
 	npm run build
 
-check: lint typecheck test-unit
+check: lint typecheck rtl-check test-unit

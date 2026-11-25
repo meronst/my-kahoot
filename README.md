@@ -18,8 +18,12 @@ make dev       # http://localhost:3000
 
 ## Checks
 
+Every pull request into `release/*` or `main` runs the pre-merge gate (`.github/workflows/pre-merge.yml`):
+conventions (branch name, PR title with Jira key) · RTL check · secret scan · lint + typecheck · unit · integration · build · E2E.
+All 8 are required before the Merge button unlocks.
+
 ```bash
-make check                      # lint + typecheck + unit tests (run before every push)
+make check                      # lint + typecheck + RTL check + unit tests (run before every push)
 make build                      # production build
 make test-e2e E2E_SCOPE=smoke   # browser tests tagged @smoke (E2E_SCOPE=full for all)
 ```
