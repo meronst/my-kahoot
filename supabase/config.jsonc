@@ -25,7 +25,9 @@
     // `postgres` are reachable through the Data API roles (`anon`, `authenticated`, `service_role`)
     // without explicit GRANTs, matching the cloud default. Set to `false` to require explicit GRANTs
     // instead. Left unset, a fresh project falls back to `true`.
-    // "auto_expose_new_tables": true,
+    // false = new tables get NO automatic API access, exactly like our cloud project (Supabase
+    // changelog #45329, 2026). Every migration must GRANT what it creates. Bug KQ-29.
+    "auto_expose_new_tables": false,
 
     "tls": {
       // Enable HTTPS endpoints locally using a self-signed certificate.

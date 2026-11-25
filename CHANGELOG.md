@@ -5,6 +5,7 @@ Format: one section per version; entries reference Jira keys.
 ## v1.0 — Live quiz for lectures (in progress)
 
 ### Fixed
+- Deployed app: "permission denied for table quizzes": explicit API grants for all game tables; local Supabase now matches the cloud's no-auto-grant behavior (KQ-29)
 - Vercel builds: framework pinned to Next.js in `vercel.json` (KQ-25)
 - Secret-scan CI job: added the `pull-requests: read` permission (KQ-24)
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
