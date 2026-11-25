@@ -124,7 +124,8 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
 ## 5. Authoring & import
 
 - Quiz list on `/host`: start, edit (`/host/quizzes/[id]`), duplicate (`duplicate_quiz()`, security invoker: RLS applies, copy owned by the caller), delete (two-click `ConfirmButton`; cascades to rounds, questions and past sessions). Settings form validated by `lib/quiz-settings.ts` before the update (KQ-15).
-- Editor: forms per question, drag to reorder, image upload (resized in the browser to ≤ 1600px, stored in Supabase Storage).
+- Editor (KQ-16), on the quiz page below the settings: rounds (optional title) each holding questions. "Add" inserts a valid placeholder at the end (position = max + 1), which the host then edits in place. Each question opens into a form validated by `lib/question-form.ts` (mirrors the `valid_options` CHECK: 2–4 options, true/false = fixed pair "נכון / לא נכון", exactly one correct, no duplicates; timer from a fixed list or none). Reorder with ▲/▼ buttons (not drag-and-drop: same on mouse, touch and keyboard, no library) via `move_round()` / `move_question()`: security invoker, swap positions with the nearest neighbour inside one transaction (the unique position constraints are deferred to commit). Positions may have gaps; only their order matters. Deletes use the two-click `ConfirmButton`.
+- Images (KQ-17): upload resized in the browser to ≤ 1600px, stored in Supabase Storage.
 - Import: Excel/CSV template parsed in the browser (SheetJS), per-row Hebrew validation, preview, save.
   Columns: `round | question | type (mc/tf) | option1–4 | correct (1–4 / true/false) | time_sec | explanation | image_url`
 

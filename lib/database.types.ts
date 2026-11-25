@@ -301,6 +301,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"move_question":
+{ Args: { "p_direction": number,"p_question_id": string }; Returns: undefined
+                           },
+"move_round":
+{ Args: { "p_direction": number,"p_round_id": string }; Returns: undefined
+                           },
 "next_question":
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
