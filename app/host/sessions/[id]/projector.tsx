@@ -17,6 +17,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useLiveSession } from "@/lib/use-live-session";
 import { t } from "@/strings/he";
 import { LobbyPlayers, useLivePlayers, type Player } from "./lobby-players";
+import { PauseScreen } from "./pause-screen";
 import { QuestionScreen } from "./question-screen";
 import { RevealScreen } from "./reveal-screen";
 
@@ -112,7 +113,13 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
       {session.status === "reveal" && question && reveal && <RevealScreen question={question} reveal={reveal} />}
 
       {session.status === "paused" && (
-        <p data-testid="paused" className="text-5xl font-bold">{t.projector.paused}</p>
+        <PauseScreen
+          // While paused, round_idx already points at the round that comes next (0-based).
+          nextRound={session.round_idx + 1}
+          roundCount={question?.round_count ?? null}
+          reveal={reveal}
+          joinInfo={<JoinInfo pin={session.pin} joinUrl={joinUrl} qrSvg={qrSvg} />}
+        />
       )}
       {session.status === "finished" && (
         <p data-testid="finished" className="text-5xl font-bold">{t.projector.finished}</p>

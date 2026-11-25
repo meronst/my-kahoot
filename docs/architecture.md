@@ -117,6 +117,8 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
 
 **Phones (KQ-11):** `<PlayerGame>` uses the same `useLiveSession` with `poll: false` (re-reads on `visibilitychange` instead). One tap = one answer: buttons lock before the network reply, the choice is kept in `localStorage` per question (so a reload still shows "answer received"), and `submit_answer` refuses duplicates anyway. Results come from `reveal_payload.results[playerId]`.
 
+**Pause (KQ-13):** after a round's last question `next_question` sets `paused` and keeps `reveal_payload`, so the pause screen shows the standings from the last reveal; `round_idx` already points at the next round. The pause screen repeats the PIN/QR because new players may join during a pause (`join_session` allows `lobby` and `paused`).
+
 ## 5. Authoring & import
 - Editor: forms per question, drag to reorder, image upload (resized in the browser to ≤ 1600px, stored in Supabase Storage).
 - Import: Excel/CSV template parsed in the browser (SheetJS), per-row Hebrew validation, preview, save.
