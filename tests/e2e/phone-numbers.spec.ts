@@ -12,8 +12,13 @@ test.use({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true
 
 test("phone field only when asked, optional, validated; the host downloads the numbers @smoke", async ({ page, browser }) => {
   const host = await signedIn(DEMO_HOST.email, DEMO_HOST.password);
-  const { data: quiz } = await host.rpc("duplicate_quiz", { p_quiz_id: DEMO_QUIZ_ID });
-  await host.from("quizzes").update({ collect_phone: true }).eq("id", quiz!.id);
+  // Its own quiz with its own title: E2E tests share one database and run in parallel, and other
+  // tests find the demo quiz by name (a copy named "עותק של חידון לדוגמה" would match them too).
+  const { data: quiz } = await host.from("quizzes").insert({ title: `טלפונים ${Date.now()}`, collect_phone: true }).select().single();
+  await host.rpc("import_rounds", {
+    p_quiz_id: quiz!.id,
+    p_rounds: [{ title: null, questions: [{ type: "tf", text: "שאלה", options: [{ text: "נכון", correct: true }, { text: "לא נכון", correct: false }], time_limit_sec: null, explanation: null }] }],
+  });
   const { data: session } = await host.rpc("create_session", { p_quiz_id: quiz!.id });
 
   // Phone 1: the field and its consent line are there; a landline is refused; a mobile works.
