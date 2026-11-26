@@ -10,7 +10,7 @@ import { t } from "../../strings/he";
 
 test.use({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
 
-test("phone field only when asked, optional, validated; the host downloads the numbers @smoke", async ({ page, browser }) => {
+test("phone field only when asked, optional, validated; the host can get the numbers @smoke", async ({ page, browser }) => {
   const host = await signedIn(DEMO_HOST.email, DEMO_HOST.password);
   // Its own quiz with its own title: E2E tests share one database and run in parallel, and other
   // tests find the demo quiz by name (a copy named "עותק של חידון לדוגמה" would match them too).
@@ -49,7 +49,7 @@ test("phone field only when asked, optional, validated; the host downloads the n
   await expect(page3.getByLabel(t.join.nicknameLabel)).toBeVisible();
   await expect(page3.getByLabel(t.join.phoneLabel)).toHaveCount(0);
 
-  // The host ends the game and downloads the numbers from the final screen.
+  // The host ends the game; the numbers are available from the host-only CSV address.
   await host.rpc("finish_session", { p_session_id: session!.id });
   await page3.goto("/host/login");
   await page3.getByLabel(t.login.email).fill(DEMO_HOST.email);
@@ -57,11 +57,11 @@ test("phone field only when asked, optional, validated; the host downloads the n
   await page3.getByRole("button", { name: t.login.submit }).click();
   await expect(page3).toHaveURL(/\/host$/);
   await page3.goto(`/host/sessions/${session!.id}`);
-  const download = page3.waitForEvent("download");
-  await page3.getByTestId("export-phones").click();
-  const file = await download;
-  expect(file.suggestedFilename()).toBe(`phones-${session!.pin}.csv`);
-  const text = (await (await file.createReadStream()).toArray()).join("");
+  await expect(page3.getByTestId("finished")).toBeVisible();
+  await expect(page3.getByText("CSV")).toHaveCount(0); // KQ-32: nothing about phones on the projector
+  const res0 = await page3.request.get(`/host/sessions/${session!.id}/phones`);
+  expect(res0.headers()["content-disposition"]).toBe(`attachment; filename="phones-${session!.pin}.csv"`);
+  const text = await res0.text();
   expect(text.replace(/^﻿/, "").split("\r\n").slice(0, 2)).toEqual([
     `${t.phones.nickname},${t.phones.phone},${t.phones.consentDate}`,
     expect.stringMatching(/^מיכל,0547770019,\d\d\/\d\d\/\d{4}$/),

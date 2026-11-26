@@ -4,6 +4,10 @@
  * Concept — Route Handler: a file named route.ts answers HTTP requests directly (like a Spring
  * @GetMapping or a Flask view) instead of rendering a page. Here: GET → a file download.
  *
+ * Not linked from any screen in v1.0: the projector is seen by the audience (KQ-32). A host screen
+ * with past games and this download is planned for v2.0 (KQ-33). Until then the host can open
+ * /host/sessions/<id>/phones directly.
+ *
  * Only the host gets numbers: getHost() checks the login, and RLS on players returns phone numbers only
  * for sessions of this host's quizzes. Nothing here logs the numbers; "no-store" keeps the file out of
  * any cache.

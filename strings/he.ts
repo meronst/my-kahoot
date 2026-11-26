@@ -215,8 +215,6 @@ export const he = {
     qrAlt: "קוד QR להצטרפות לחידון",
   },
   phones: {
-    export: "הורדת מספרי הטלפון (CSV)",
-    exportHint: "המספרים נמחקים אוטומטית 30 יום אחרי ההצטרפות",
     nickname: "כינוי",
     phone: "טלפון",
     consentDate: "תאריך הסכמה",
