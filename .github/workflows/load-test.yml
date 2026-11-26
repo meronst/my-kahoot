@@ -1,0 +1,60 @@
+# .github/workflows/load-test.yml — simulates a full lecture hall against the CLOUD project (KQ-12).
+#
+# Not part of the pre-merge gate: it uses real cloud quota (anonymous sign-ins are rate-limited),
+# so it runs only on purpose:
+#   - "Run workflow" button on GitHub (Actions → load-test), with the number of players, or
+#   - a push to a branch named loadtest/... (how Claude starts it, since it can't press the button).
+# It creates a throw-away host + quiz + players and deletes them at the end (scripts/load-test.mjs).
+# The API keys are fetched with the access token already used by db-deploy, and masked in the log.
+
+name: load-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      players: { description: "Number of simulated players", default: "150" }
+      questions: { description: "Number of questions", default: "5" }
+  push:
+    branches: ["loadtest/**"]
+
+concurrency:
+  group: load-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    name: Load test (cloud)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      PLAYERS: ${{ inputs.players || '150' }}
+      QUESTIONS: ${{ inputs.questions || '5' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Fetch the project's API keys (masked)
+        run: |
+          npx supabase projects api-keys --remote="$PROJECT_REF" --reveal --output-format json > /tmp/keys.json
+          node -e '
+            const raw = JSON.parse(require("fs").readFileSync("/tmp/keys.json", "utf8"));
+            const list = Array.isArray(raw) ? raw : (raw.keys ?? raw.api_keys ?? Object.values(raw).find(Array.isArray) ?? []);
+            const val = (k) => k.api_key ?? k.key ?? k.value;
+            const pick = (types, names) => list.find((k) => types.includes(k.type)) ?? list.find((k) => names.includes(k.name));
+            const pub = pick(["publishable"], ["anon"]), sec = pick(["secret"], ["service_role"]);
+            if (!pub || !sec) { console.error("keys not found; entries:", list.map((k) => k.name + "/" + k.type)); process.exit(1); }
+            const fs = require("fs");
+            for (const [n, v] of [["SUPABASE_PUBLISHABLE_KEY", val(pub)], ["SUPABASE_SECRET_KEY", val(sec)]]) {
+              console.log("::add-mask::" + v);
+              fs.appendFileSync(process.env.GITHUB_ENV, n + "=" + v + "\n");
+            }
+            console.log("keys found:", pub.name, sec.name);
+          '
+          rm /tmp/keys.json
+          echo "SUPABASE_URL=https://$PROJECT_REF.supabase.co" >> "$GITHUB_ENV"
+      - name: Run the load test
+        run: node scripts/load-test.mjs
