@@ -65,7 +65,7 @@ export class ProjectorAudio {
       this.master.connect(this.ctx.destination);
     }
     void this.ctx.resume();
-    if (this.musicWanted) this.startMusicLoop();
+    if (this.musicWanted && !this.muted) this.startMusicLoop();
   }
 
   get unlocked(): boolean {

@@ -40,6 +40,8 @@ test("music and effects on the projector only; mute is remembered @smoke", async
   const { data: session } = await host.rpc("create_session", { p_quiz_id: quiz!.id });
 
   await page.addInitScript(countAudio);
+  const consoleErrors: string[] = [];
+  page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
   await page.goto("/host/login");
   await page.getByLabel(t.login.email).fill(DEMO_HOST.email);
   await page.getByLabel(t.login.password).fill(DEMO_HOST.password);
@@ -86,4 +88,6 @@ test("music and effects on the projector only; mute is remembered @smoke", async
   expect(await audio(phone)).toEqual({ contexts: 0, notes: 0 });
 
   await phoneContext.close();
+  // The saved mute value is read only after hydration, so the server and browser HTML agree.
+  expect(consoleErrors.filter((e) => e.includes("418") || e.toLowerCase().includes("hydration"))).toEqual([]);
 });

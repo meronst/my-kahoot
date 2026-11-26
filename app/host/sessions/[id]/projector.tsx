@@ -98,9 +98,10 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
       data-testid="projector"
       data-status={session.status}
       data-realtime={realtime}
-      className="relative flex w-full flex-1 flex-col items-center gap-8"
+      className="flex w-full flex-1 flex-col items-center gap-8"
     >
-      <div className="absolute end-0 top-0 flex flex-col items-end gap-1">
+      {/* Its own row (not floating over the title), so it never covers anything on a narrow screen. */}
+      <div className="-mb-6 flex flex-col items-end gap-1 self-end">
         <button
           type="button"
           data-testid="sound-toggle"
