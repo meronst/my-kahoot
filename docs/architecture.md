@@ -153,6 +153,7 @@ Played only on the projector; the phones never load the audio code (checked in E
 | load test (KQ-12) | script, 150 simulated players | the free-tier message limit |
 
 ## 9. Operations
-- Keep-alive: daily GitHub Actions cron hits a health endpoint so Supabase doesn't pause.
-- `/host` shows a "system ready" indicator before a lecture.
+- **Session expiry (KQ-21):** `expires_at` = creation + 24 h. Joining after that is refused (`join_session`, `session_preview.is_open`). `expire_sessions()` runs every 15 minutes from pg_cron and finishes any expired, unfinished game with a final ranking (`_finish`), so screens show "ended" instead of a frozen game.
+- **Keep-alive (KQ-21):** `.github/workflows/keep-alive.yml` calls the `health()` RPC daily at 04:23 UTC (publishable key fetched with the access token), so the free project never reaches a week of inactivity. A failed call fails the run and GitHub emails the owner. GitHub disables schedules after 60 days without commits; the Actions tab then offers "Enable workflow".
+- **"System ready" light (KQ-21):** `components/ready-light.tsx` on `/host` calls `health()` from the browser (the same path the phones use) every 30 s and when the tab regains focus: green = answered "ok", red = error or no answer in 5 s.
 - Environments: local (Supabase CLI in Docker) → CI (same local stack) → Vercel preview per PR and production, both on the one cloud Supabase project. Migrations deploy on merge to `release/**` or `main`. See [ADR 0002](decisions/0002-database-environments.md).

@@ -1,0 +1,41 @@
+# .github/workflows/keep-alive.yml — keeps the free Supabase project awake (KQ-21).
+#
+# Supabase pauses a free project after about a week without activity. A paused project means the
+# quiz doesn't work at the next lecture until someone presses "restore" on the dashboard. So once a
+# day GitHub calls the database's health() function: a real API request, which counts as activity.
+#
+# If the call fails (project paused, keys changed), the run fails and GitHub emails the repo owner.
+# Note: GitHub turns off scheduled workflows in a repo with no commits for 60 days. If that ever
+# happens, GitHub shows a banner on the Actions tab with an "Enable workflow" button.
+
+name: keep-alive
+
+on:
+  schedule:
+    - cron: "23 4 * * *"   # every day 04:23 UTC (06:23 / 07:23 in Israel)
+  workflow_dispatch: {}
+  push:
+    paths: [".github/workflows/keep-alive.yml"]   # self-test whenever this file changes
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Call health()
+        run: |
+          KEY=$(npx supabase projects api-keys --remote="$PROJECT_REF" --output-format json \
+            | node -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));const l=Array.isArray(r)?r:(r.keys??r.api_keys??Object.values(r).find(Array.isArray)??[]);const k=l.find(x=>x.type==="publishable")??l.find(x=>x.name==="anon");process.stdout.write(k.api_key??k.key??k.value)')
+          ANSWER=$(curl -sS --max-time 20 -X POST "https://$PROJECT_REF.supabase.co/rest/v1/rpc/health" \
+            -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}')
+          echo "health() answered: $ANSWER"
+          [ "$ANSWER" = '"ok"' ]
