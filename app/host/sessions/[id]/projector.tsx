@@ -28,13 +28,11 @@ type Props = {
   initialSession: SessionRow;
   initialPlayers: Player[];
   title: string;
-  /** CSV download of phone numbers, when the quiz collects them (KQ-19). */
-  phonesHref: string | null;
   joinUrl: string;
   qrSvg: string;
 };
 
-export function Projector({ initialSession, initialPlayers, title, phonesHref, joinUrl, qrSvg }: Props) {
+export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSvg }: Props) {
   const { session, setSession, realtime } = useLiveSession(initialSession);
   const { players, realtimeStatus: playersRealtime } = useLivePlayers(session.id, initialPlayers);
   const [busy, setBusy] = useState(false);
@@ -124,7 +122,7 @@ export function Projector({ initialSession, initialPlayers, title, phonesHref, j
           joinInfo={<JoinInfo pin={session.pin} joinUrl={joinUrl} qrSvg={qrSvg} />}
         />
       )}
-      {session.status === "finished" && <FinalScreen final={finalPayload(session)} phonesHref={phonesHref} />}
+      {session.status === "finished" && <FinalScreen final={finalPayload(session)} />}
 
       <div className="flex flex-col items-center gap-2">
         {primary && (

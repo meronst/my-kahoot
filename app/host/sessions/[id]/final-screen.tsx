@@ -11,7 +11,7 @@ import { t } from "@/strings/he";
 const MEDAL = ["🥇", "🥈", "🥉"];
 const HEIGHT = ["h-56", "h-40", "h-28"]; // podium block height by finishing place (1st, 2nd, 3rd)
 
-export function FinalScreen({ final, phonesHref }: { final: FinalPayload | null; phonesHref: string | null }) {
+export function FinalScreen({ final }: { final: FinalPayload | null }) {
   const podium = final?.show_scores ? final.podium : [];
   // Visual order on a podium: 2nd, 1st, 3rd. (In RTL the row reads right-to-left, so the first item
   // appears on the right; the 1st place stays in the middle either way.)
@@ -20,16 +20,6 @@ export function FinalScreen({ final, phonesHref }: { final: FinalPayload | null;
   return (
     <div data-testid="finished" className="flex w-full max-w-5xl flex-col items-center gap-8">
       <h1 className="text-5xl font-bold">{t.projector.finished}</h1>
-
-      {phonesHref && (
-        <p className="flex flex-col items-center gap-1">
-          {/* a normal link: the browser downloads the CSV (Content-Disposition: attachment) */}
-          <a href={phonesHref} download data-testid="export-phones" className="rounded-md border border-current/30 px-4 py-2 text-xl underline">
-            {t.phones.export}
-          </a>
-          <span className="text-sm opacity-70">{t.phones.exportHint}</span>
-        </p>
-      )}
 
       {visual.length > 0 && (
         <section className="w-full">
