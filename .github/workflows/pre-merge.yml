@@ -135,6 +135,12 @@ jobs:
           if grep -E "\[WebServer\] (Error|⨯)" e2e-output.log; then
             echo "::error::The app server logged errors during E2E (see lines above)"; exit 1
           fi
+          # KQ-19: phone numbers must never reach a log. The E2E tests join with 054-777-0019;
+          # look for it in our server's output and in every Supabase container's log.
+          for name in $(docker ps --format '{{.Names}}' | grep supabase); do docker logs "$name" >> service-logs.txt 2>&1; done
+          if grep -E "054-?777-?0019|9725477700?19" e2e-output.log service-logs.txt; then
+            echo "::error::A test phone number appeared in a log"; exit 1
+          fi
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

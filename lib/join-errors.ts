@@ -19,6 +19,8 @@ export function isValidPin(pin: string): boolean {
 export function joinErrorMessage(error: { message?: string; code?: string; status?: number } | null | undefined): string {
   if (!error) return t.join.errors.generic;
   switch (error.message) {
+    case "phone_invalid":
+      return t.join.errors.phoneInvalid;
     case "nickname_taken":
       return t.join.errors.nicknameTaken;
     case "nickname_invalid":

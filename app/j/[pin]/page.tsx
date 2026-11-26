@@ -49,7 +49,7 @@ async function Join({ params }: { params: Promise<{ pin: string }> }) {
     <>
       <p className="text-lg opacity-80">{t.join.joiningQuiz}</p>
       <h1 data-testid="quiz-title" className="text-3xl font-bold">{session.quiz_title}</h1>
-      <JoinForm pin={pin} sessionId={session.session_id} />
+      <JoinForm pin={pin} sessionId={session.session_id} collectPhone={session.collect_phone} />
     </>
   );
 }

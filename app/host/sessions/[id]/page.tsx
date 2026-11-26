@@ -34,7 +34,7 @@ async function SessionLoader({ params }: { params: Promise<{ id: string }> }) {
 
   const supabase = await createSupabaseServerClient();
   // `quizzes(title)` follows the foreign key sessions.quiz_id → quizzes: one query, like a JOIN.
-  const { data: row } = await supabase.from("sessions").select("*, quizzes(title)").eq("id", id).maybeSingle();
+  const { data: row } = await supabase.from("sessions").select("*, quizzes(title, collect_phone)").eq("id", id).maybeSingle();
   if (!row) notFound(); // missing, or not this host's (RLS hides it): same answer either way
   const { quizzes, ...session } = row;
 
@@ -50,6 +50,7 @@ async function SessionLoader({ params }: { params: Promise<{ id: string }> }) {
       initialSession={session}
       initialPlayers={players ?? []}
       title={quizzes?.title ?? ""}
+      phonesHref={quizzes?.collect_phone ? `/host/sessions/${session.id}/phones` : null}
       joinUrl={joinUrl}
       qrSvg={qrSvg}
     />

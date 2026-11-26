@@ -239,6 +239,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_expired_phones":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "duplicate_quiz":
 { Args: { "p_quiz_id": string }; Returns: {
               "collect_phone": boolean,
@@ -288,7 +291,7 @@ isOneToOne: false
 { Args: { "sid": string }; Returns: boolean
                            },
 "join_session":
-{ Args: { "p_nickname": string,"p_pin": string }; Returns: {
+{ Args: { "p_nickname": string,"p_phone"?: string,"p_pin": string }; Returns: {
               "id": string,
 "joined_at": string,
 "nickname": string,
@@ -331,6 +334,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"normalize_phone":
+{ Args: { "p_phone": string }; Returns: string
+                           },
 "owns_quiz_folder":
 { Args: { "p_object_name": string }; Returns: boolean
                            },
@@ -384,6 +390,11 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"scheduled_jobs":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,"command": string,"jobname": string,"schedule": string
+            }[]
+                           },
 "score_answer":
 { Args: { "p_correct": boolean,"p_elapsed_ms": number,"p_limit_sec": number,"p_mode": Database["public"]['Enums']["scoring_mode"] }; Returns: number
                            },
