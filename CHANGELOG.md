@@ -12,6 +12,7 @@ Format: one section per version; entries reference Jira keys.
 - RTL check no longer flags comments or words like "right-to-left"; now a tested script, `scripts/rtl-check.mjs` (KQ-23)
 
 ### Added
+- Games end automatically after 24 hours (pg_cron every 15 min, final ranking kept), daily keep-alive ping so the free Supabase project never pauses, "system ready" light on /host (KQ-21)
 - Load test: 150 simulated players × 5 questions against the cloud project (manual GitHub workflow); result: free tier is enough, 0 dropped, p95 < 0.7 s (ADR 0004, KQ-12)
 - Projector audio: synthesized lobby music and sound effects (question, last-5-second ticks, reveal, finale, player joined), mute switch remembered across reloads, no audio on phones (KQ-20)
 - Optional phone number on the join screen (only when the quiz asks; consent line; Israeli mobile format), CSV download at a host-only address (no link on the projector, KQ-32), automatic deletion after 30 days by a daily pg_cron job, CI check that numbers never appear in logs (KQ-19)

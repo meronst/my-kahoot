@@ -1,6 +1,7 @@
 /**
  * app/host/page.tsx — the host's home page (/host): who's signed in, and the quizzes to start.
  * Each quiz: start a live session, edit, duplicate, delete (two-click confirm). Plus "new quiz".
+ * KQ-21: a "system ready" light at the top (outside Suspense, so it shows while the rest loads).
  *
  * Concept — Suspense and streaming (Next.js "Cache Components"):
  *   Anything that depends on the request (here: who is logged in, read from cookies) can't be part of
@@ -11,6 +12,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ConfirmButton } from "@/components/confirm-button";
+import { ReadyLight } from "@/components/ready-light";
 import { getHost } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { t } from "@/strings/he";
@@ -21,6 +23,7 @@ export default function HostPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
       <h1 className="text-3xl font-bold">{t.host.title}</h1>
+      <ReadyLight />
       <Suspense fallback={<p>{t.host.loading}</p>}>
         <SignedInHost />
       </Suspense>

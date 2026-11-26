@@ -257,6 +257,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"expire_sessions":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "finish_session":
 { Args: { "p_session_id": string }; Returns: {
               "created_at": string,
