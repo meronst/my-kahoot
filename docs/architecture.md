@@ -133,7 +133,11 @@ Host RPCs (KQ-9): `start_session`, `reveal_question`, `next_question`, `resume_s
   Changed from the original plan: SheetJS → `read-excel-file` + `papaparse` (SheetJS's npm package is outdated; the current one is only on their CDN), and no `image_url` column (images are added in the editor, KQ-17).
 
 ## 6. Projector audio
-Static files, played only on the projector; mute toggle in localStorage.
+Played only on the projector; the phones never load the audio code (checked in E2E by counting AudioContexts).
+- **Synthesized, not files** (changed from the plan): `lib/projector-audio.ts` makes every sound with the Web Audio API — a calm 8-bar pentatonic loop for the lobby and the pause between rounds, and short effects: question chime, ticks in the last 5 seconds, reveal arpeggio, final fanfare, a soft pop when someone joins. No licensing questions, nothing to download, volume kept low for lecture halls.
+- **When:** `lib/sound-plan.ts` (pure, unit-tested) maps state changes to sounds; `lib/use-projector-audio.ts` wires it to the projector. Reopening the page mid-game plays nothing until the next change.
+- **Autoplay rule:** browsers allow sound only after a click/keypress, so the engine wakes on the host's first click or key (the Space-bar clicker counts) and the screen hints "the sound starts after the first click".
+- **Mute:** a button at the top of the projector; remembered in `localStorage` (read with `useSyncExternalStore` to avoid a hydration mismatch; falls back to memory if storage is blocked).
 
 ## 7. Code conventions
 - **Explanatory comments for learning:** a header comment per file; comments explain *why* and introduce each new concept the first time it appears.

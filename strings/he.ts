@@ -219,6 +219,12 @@ export const he = {
     phone: "טלפון",
     consentDate: "תאריך הסכמה",
   },
+  sound: {
+    on: "🔊 צליל פועל",
+    off: "🔇 צליל כבוי",
+    label: "צליל במקרן: הפעלה או השתקה",
+    clickToEnable: "הצליל יתחיל אחרי לחיצה ראשונה על המסך",
+  },
   projector: {
     start: "התחלת החידון",
     reveal: "הצגת התשובה",
