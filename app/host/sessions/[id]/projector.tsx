@@ -6,6 +6,8 @@
  * or keyboard while standing at the lectern). Each button calls a game-engine function in the
  * database; the database decides whether the move is allowed.
  *
+ * KQ-20: lobby music and sound effects (useProjectorAudio), with a mute switch remembered in this browser.
+ *
  * After an action, the returned row is shown immediately; Realtime/polling then confirm it on every
  * screen. useLiveSession only moves forward, so the duplicate updates are harmless.
  */
@@ -14,7 +16,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { finalPayload, questionPayload, revealPayload, type SessionRow } from "@/lib/game-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useCountdown } from "@/lib/use-countdown";
 import { useLiveSession } from "@/lib/use-live-session";
+import { useProjectorAudio } from "@/lib/use-projector-audio";
 import { t } from "@/strings/he";
 import { LobbyPlayers, useLivePlayers, type Player } from "./lobby-players";
 import { FinalScreen } from "./final-screen";
@@ -82,6 +86,11 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
 
   const question = questionPayload(session);
   const reveal = revealPayload(session);
+  const secondsLeft = useCountdown(
+    session.status === "question" ? session.question_started_at : null,
+    session.status === "question" ? (question?.time_limit_sec ?? null) : null, // no 4×/s re-render outside questions
+  );
+  const sound = useProjectorAudio({ status: session.status, playerCount: players.length, secondsLeft });
   const onShouldReveal = useCallback(() => void run("reveal_question"), [run]);
 
   return (
@@ -91,6 +100,21 @@ export function Projector({ initialSession, initialPlayers, title, joinUrl, qrSv
       data-realtime={realtime}
       className="flex w-full flex-1 flex-col items-center gap-8"
     >
+      {/* Its own row (not floating over the title), so it never covers anything on a narrow screen. */}
+      <div className="-mb-6 flex flex-col items-end gap-1 self-end">
+        <button
+          type="button"
+          data-testid="sound-toggle"
+          aria-pressed={!sound.muted}
+          aria-label={t.sound.label}
+          title={t.sound.label}
+          onClick={sound.toggleMuted}
+          className="rounded-full border border-current/30 px-3 py-1 text-lg"
+        >
+          {sound.muted ? t.sound.off : t.sound.on}
+        </button>
+        {!sound.muted && !sound.unlocked && <span className="text-xs opacity-60">{t.sound.clickToEnable}</span>}
+      </div>
       {session.status === "lobby" && (
         <>
           <h1 className="text-4xl font-bold">{title}</h1>
